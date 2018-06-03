@@ -1,11 +1,5 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(oh-my-db VERSION 0.1.0)
+cmake_minimum_required(VERSION 2.8)
 
-include(CTest)
-enable_testing()
-aux_source_directory(. DIRSRCS)
-add_executable(oh-my-db )
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+project(oh-my-db)
+add_executable(${PROJECT_NAME} "main.cpp" "b_plus_tree.h")
+add_executable("b_plus_tree_test" "b_plus_tree_test.cpp" "b_plus_tree.h")

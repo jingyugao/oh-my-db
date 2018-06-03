@@ -36,3 +36,6 @@ build
 .DS_STORE
 CMakeFiles
 *.cmake
+CMakeCache.txt
+oh-my-db
+b_plus_tree_test
