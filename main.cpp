@@ -1,9 +1,11 @@
-#include "b_plus_tree.h"
+#include "db.h"
+
 #include <iostream>
 #include <random>
 using namespace omd;
 using namespace std;
 int main(int, char **)
 {
-    cout << "hello oh-my-db!" << endl;
+    db d1;
+    d1.insert(1,"xxx");
 }
