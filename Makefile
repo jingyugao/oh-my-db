@@ -1,8 +1,8 @@
-all:oh-my-db
+all:oh-my-db btree
 .PHONY : all
 
 CXX=clang++
-FLAG=-g -std=c++14
+FLAG=-g -o2 -std=c++14
 
 
 %.o : %.c
@@ -10,7 +10,8 @@ FLAG=-g -std=c++14
 
 oh-my-db:main.o db.o
 	$(CXX) $(FLAG) $^ -o $@
-
+btree:mBtree_test.cpp mBTree.h
+	$(CXX) $(FLAG) $< -o $@ 
 .PHONY:clean
 clean:
 	rm *.o oh-my-db
