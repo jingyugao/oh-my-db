@@ -5,7 +5,7 @@ using namespace gjy;
 const int N=30;
 int main(){
 
-    BTree t;
+    b_tree<int ,int,4> bt;
     set<int> a;
    
     for(int i=0;i<N;i++)
@@ -16,8 +16,8 @@ int main(){
         }while(a.find(k)!=a.end());
         a.insert(k);
         printf("\n***insert %d ***\n",k);
-        t.insert(k,i+1);
-        t.print();
+        bt.insert(k,i+1);
 
+        cout<<bt;
     }
 }
