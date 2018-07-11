@@ -55,7 +55,7 @@ public:
     {
         root = createNode();
         root->use = 0;
-        root->isLeaf=true;
+        root->isLeaf = true;
     }
     loc find(int k)
     {
@@ -80,6 +80,7 @@ public:
         //            }
         //            p = p->Children[mid];
         //        }
+        return loc{nullptr, 0};
     }
     //Dont mind insert mutli values
     void insert(int key, int val)
@@ -88,7 +89,8 @@ public:
         BTreeNode *p = root;
         while (1) {
             int i = find_pos(p, key);
-            if (p->Children[i] == nullptr)
+
+            if (p->isLeaf)
                 break;
             p = p->Children[i];
         }
@@ -96,7 +98,7 @@ public:
         insert_aux0(p, key, val);
 
         if (p->use == deg + 1) {
-            fix_aux1(p);
+            fix_aux(p);
         }
     }
 
@@ -106,8 +108,8 @@ public:
         int i = find_pos(node, key);
 
         for (int j = node->use; j > i; j--) {
-            node->Keys[j + 1] = node->Keys[j];
-            node->Values[j + 1] = node->Values[j];
+            node->Keys[j] = node->Keys[j-1];
+            node->Values[j ] = node->Values[j-1];
         }
         node->Keys[i] = key;
         node->use++;
@@ -125,6 +127,7 @@ public:
         BTreeNode *par = node->Parent;
         if (par == nullptr) {
             par = createNode();
+            par->isLeaf = false;
             par->use = 0;
             root = par;
         }
@@ -132,19 +135,26 @@ public:
         node->use = deg / 2;
 
         BTreeNode *rightNode = createNode();
+        rightNode->isLeaf = node->isLeaf;
         rightNode->Parent = par;
         node->Parent = par;
         rightNode->use = deg - deg / 2;
         //std::copy
         for (int j = 0; j < rightNode->use; j++) {
             rightNode->Keys[j] = node->Keys[j + mid + 1];
-            if(!rightNode.isLeaf)
+            if (!rightNode->isLeaf){
                 rightNode->Children[j] = node->Children[j + mid + 1];
+                rightNode->Children[j]->Parent=rightNode;
+            }
         }
-        rightNode->Children[rightNode->use] = node->Children[deg];
+        if (!rightNode->isLeaf){
+            rightNode->Children[rightNode->use] = node->Children[deg + 1];
+            node->Children[deg + 1]->Parent=rightNode;
+        }
         // insert to parent node
         int i = find_pos(par, node->Keys[mid]);
         for (int j = par->use; j > i; j--) {
+            
             par->Children[j + 1] = par->Children[j];
             par->Keys[j] = par->Keys[j - 1];
             par->Values[j] = par->Values[j - 1];
@@ -158,50 +168,60 @@ public:
     }
 
     //node is full
-    void fix_aux1(BTreeNode *node)
+    void fix_aux(BTreeNode *node)
     {
         assert(node->use == deg + 1);
         BTreeNode *n2 = split_node_to_parent(node);
         if (n2->use == deg + 1)
-            fix_aux1(n2);
+            fix_aux(n2);
     };
- #if 1
-#define logLine(d) printf("%d %d\n",d,__LINE__) 
+#if 0
+#define logLine(d) printf("%d %d\n", d, __LINE__)
 #else
-#define logLine() do{}while(0) 
+#define logLine(x)                                                             \
+    do {                                                                       \
+    } while (0)
 #endif
     void print()
     {
 
+        logLine(-1);
         std::queue<BTreeNode *> q;
 
         BTreeNode *p = nullptr;
         if (root == nullptr)
             return;
-        q.push(root);   
+        q.push(root);
         while (!q.empty()) {
             queue<BTreeNode *> q2;
             while (!q.empty()) {
 
-                p=q.front();
+                p = q.front();
                 q.pop();
-                                logLine(0);
 
-                logLine(p);
                 logLine(0);
-                printf("[");
+                if (p->isLeaf)
+                    printf("<");
+                else
+                    printf("[");
+
                 for (int i = 0; i < p->use; i++) {
                     printf("%d ", p->Keys[i]);
-                    
-                    q2.push(p->Children[i]);
+                    if (!p->isLeaf)
+                        q2.push(p->Children[i]);
                 }
-                printf("]\t");
-                if(p->use!=0)
+                  if (p->isLeaf)
+                    printf(">\t");
+                else
+                    printf("]\t");
+                if (p->use != 0 && !p->isLeaf)
                     q2.push(p->Children[p->use]);
             }
-            q=q2;
+            q = q2;
+            printf("\n");
             logLine(q.size());
         }
+        logLine(-2);
     }
 
 private:

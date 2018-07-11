@@ -1,14 +1,22 @@
 #include"mBTree.h"
-
+#include<random>
+#include<set>
 using namespace gjy;
+const int N=30;
 int main(){
 
     BTree t;
-    for(int i=0;i<30;i++)
+    set<int> a;
+   
+    for(int i=0;i<N;i++)
     {
-     
-        t.insert(i+1,i+1);
-        printf("\n***\n");
+        int k=0;
+        do{
+            k=rand()%100;
+        }while(a.find(k)!=a.end());
+        a.insert(k);
+        printf("\n***insert %d ***\n",k);
+        t.insert(k,i+1);
         t.print();
 
     }
