@@ -5,7 +5,7 @@ using namespace gjy;
 const int N=30;
 int main(){
 
-    b_tree<int ,int,4> bt;
+    b_tree<int ,int,5> bt;
     set<int> a;
    
     for(int i=0;i<N;i++)
