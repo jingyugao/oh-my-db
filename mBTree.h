@@ -39,7 +39,7 @@ class b_tree {
     struct node_type {
         bool isLeaf;
         unsigned short use;
-        node_type *prev,*next;//left brother and right brother
+        node_type *prev, *next; //left brother and right brother
         node_type *parent;
         _Key Keys[deg + 1]; //last is sentiel
         node_type *Children[deg + 2];
@@ -50,7 +50,7 @@ public:
     typedef _Tp data_type;
     typedef std::pair<key_type, data_type> value_type;
     typedef _Compare key_compare;
-    
+
     b_tree()
     {
         root = create_node();
@@ -165,9 +165,8 @@ private:
         par->Children[i + 1] = rightNode;
         par->Children[i] = node; //left node
 
-        rightNode->prev=node;
-        node->next=rightNode;
-
+        rightNode->prev = node;
+        node->next = rightNode;
 
         par->Keys[i] = node->Keys[mid];
         par->use++;
@@ -223,23 +222,16 @@ private:
         }
     }
 
-    const int min_slot=(deg-1)/2;
-    const int max_slot=deg;
+    const int min_slot = (deg - 1) / 2;
+    const int max_slot = deg;
     //i must in btree.
-    void remove(const loc &i) {
-
-
-
-
-
-
-    }
-
+    void remove(const loc &i) {}
+    // i->node is leaf
     // i->node->use is ok after remove i
     void remove_aux0(const loc &i)
     {
-        assert(i->node->use>min_slot);
-        node_type *n=i->node;
+        assert(i->node->use > min_slot);
+        node_type *n = i->node;
         for (int j = i->pos; j < i->use; j++) {
             n->Keys[i] = n->_Keys[i + 1];
             i->node->Children[i] = i->node->Children[i + 1];
@@ -247,47 +239,64 @@ private:
         i->node->use--;
     }
     // i->node->use is eq to min_slot and its brother's use is gt min_slot
+    // i->node is leaf
+    void remove_aux1(const loc &i)
+    {
+        assert(i->node->isLeaf);
+        assert(i->node->use == min_slot);
+        assert(i->node->Parent != nullptr);
 
-    void remove_aux1(const loc&i){
-    
-        assert(i->node->use==min_slot); 
-        assert(i->node->Parent!=nullptr)
-        
-        node_type*node=i->node;
-        node_type*par=node->Parent;
-        
-        if(node->prev&&node->prev->use>min_slot){
-                // reomove o
-                //      [p  a   r]         [p   f   r]
-                //     / \ / \     -->    / \  / \
-                //   [.][lef][nod]      [.][le] [and]
-                //
+        node_type *node = i->node;
+        node_type *par = node->Parent;
 
-                int r_in_parent=0;
-                while(r_in_parent<par->use+1&&par->Children[i]!=node){
-                    r_in_parent++;
-                }
-                node_type*prev=node->prev;
-                int l_in_parent=r_in_parent-1;
-                int k_index=l_in_parent;
+        if (node->prev && node->prev->use > min_slot) {
+            // reomove o
+            // index:  x x+1
+            //      [p  a   r]         [p   f   r]
+            //     / \ / \     -->    / \  / \
+            //   [.][lef][nod]      [.][le] [and]
+            //
 
-
-                assert(par->Children[r_in_parent]==node);
-                assert(par->Children[r_in_parent]==node);
-                node->Keys[i->pos]=par->Keys[r_in_parent];
-
+            int x = 0;
+            while (x < par->use + 1 && par->Children[i] != node) {
+                x++;
             }
+            node_type *left = node->prev;
+            assert(par->Children[x + 1] == node);
+            assert(par->Children[x] == left);
+            for (int j = i - pos; j > 0; j--) {
+                node->Keys[j] = node->Keys[j - 1];
+            }
+            node->Keys[0] = par->Keys[x];
+            par->Keys[x] = left->Keys[left->use];
+            left->use--;
+            node->Keys[x] = par->Keys[r_in_parent];
             return;
         }
-        if(node->next&&node->next->use>min_slot){
-            
+        if (node->next && node->next->use > min_slot) {
+            // TODO:会不会产生死循环，左-借->右-借->左？
+            // 
             return;
         }
-        assert(0);// no brother is ok
+        assert(0); // no brother is ok
+    }
+
+    // i->node->children[i->pos] is leaf and is ok
+    void remove_aux2(const loc&i){
 
     }
+
+    // i->node->children[i->pos] all not ok
+    // merge children to one
+    void remove_aux3(){
+
+    }
+
+
     node_type *root;
 };
+
+
 
 // struct BTreeNode {
 //     int Keys[deg + 1];
