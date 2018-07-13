@@ -251,10 +251,30 @@ private:
     void remove_aux1(const loc&i){
     
         assert(i->node->use==min_slot); 
+        assert(i->node->Parent!=nullptr)
+        
         node_type*node=i->node;
+        node_type*par=node->Parent;
+        
         if(node->prev&&node->prev->use>min_slot){
-                int l_in_parent;
-                
+                // reomove o
+                //      [p  a   r]         [p   f   r]
+                //     / \ / \     -->    / \  / \
+                //   [.][lef][nod]      [.][le] [and]
+                //
+
+                int r_in_parent=0;
+                while(r_in_parent<par->use+1&&par->Children[i]!=node){
+                    r_in_parent++;
+                }
+                node_type*prev=node->prev;
+                int l_in_parent=r_in_parent-1;
+                int k_index=l_in_parent;
+
+
+                assert(par->Children[r_in_parent]==node);
+                assert(par->Children[r_in_parent]==node);
+                node->Keys[i->pos]=par->Keys[r_in_parent];
 
             }
             return;
