@@ -1,7 +1,7 @@
 #include"mBTree.h"
 #include<random>
 #include<set>
-using namespace gjy;
+using namespace omd;
 const int N=30;
 int main(){
 
@@ -18,6 +18,6 @@ int main(){
         printf("\n***insert %d ***\n",k);
         bt.insert(k,i+1);
 
-        cout<<bt;
+        cerr<<bt;
     }
 }

@@ -10,7 +10,7 @@
 #define logLine(x) void(0);
 #endif
 using namespace std;
-namespace gjy {
+namespace omd {
 
 template <class _Key,
           class _Tp,
@@ -25,7 +25,7 @@ class b_tree {
     //   struct node_base {
     //       bool isLeaf;
     //      unsigned short use;
-    //      inner_node *parent;
+    //      inner_node *Parent;
     //  };
 
     //  struct inner_node : public node_base {
@@ -36,20 +36,111 @@ class b_tree {
     //struct leaf_node:public leaf_node{
     //    value_type Keys[deg+1];//last is sentiel
     //}
-    struct node_type {
-        bool isLeaf;
-        unsigned short use;
-        node_type *prev, *next; //left brother and right brother
-        node_type *parent;
-        _Key Keys[deg + 1]; //last is sentiel
-        node_type *Children[deg + 2];
-    };
 
 public:
     typedef _Key key_type;
     typedef _Tp data_type;
     typedef std::pair<key_type, data_type> value_type;
     typedef _Compare key_compare;
+
+    struct node_type {
+        bool isLeaf;
+        int use;
+        node_type *prev, *next; //left brother and right brother
+        node_type *Parent;
+        key_type Keys[deg + 1]; //last is sentiel
+        node_type *Children[deg + 2];
+
+        bool is_ok() { return use <= max_slot && use >= min_slot; }
+        bool is_surplus() { return use > min_slot; };
+
+        void insert(int i, std::pair<key_type, node_type *> val)
+        {
+
+            use++;
+            Children[use] = Children[use - 1];
+            for (int j = use - 1; j > i; j--) {
+                Keys[j] = Keys[j - 1];
+                Children[j] = Children[j - 1];
+            }
+            Keys[i] = val.first;
+            Children[i] = val.second;
+        }
+
+        const key_type get_key(int i) const
+        {
+            assert(i < use);
+            return Keys[i];
+        }
+
+        void set_key(int i, const key_type &k) { Keys[i] = k; }
+
+        void insert_key(int i, const key_type &k)
+        {
+
+            use++;
+            for (int j = use - 1; j > i; j--) {
+                Keys[j] = Keys[j - 1];
+            }
+            Keys[i] = k;
+        }
+        void remove_key(int i)
+        {
+            for (int j = i; j < use - 1; j++) {
+                Keys[i] = Keys[i + 1];
+            }
+            use--;
+        }
+
+        void set_child(int i, node_type *n) { Children[i] = n; }
+        node_type *get_child(int i) const { return Children[i]; }
+
+        void remove(int i)
+        {
+            for (int j = i; j < use - 1; j++) {
+                Keys[i] = Keys[i + 1];
+            }
+
+            if (isLeaf) {
+                for (int j = i; j < use; j++) {
+                    Keys[i] = Keys[i + 1];
+                }
+            }
+
+            use--;
+        }
+
+        size_t find_pos(const key_type &k)
+        {
+            assert(this != nullptr);
+            size_t i = 0;
+            while (i < use && k > Keys[i])
+                i++;
+            return i;
+        }
+
+        int find_child(node_type *child)
+        {
+            node_type *par = child->Parent;
+            int i = 0;
+            while (i < par->use + 1 && par->Children[i] != child)
+                i++;
+            return i /* <par->use+1?-1:i */;
+        }
+        node_type *get_child(int i)
+        {
+            assert(!isLeaf && i < use + 1);
+            return Children[i];
+        }
+
+        key_type &first_key() const { return Keys[0]; }
+        key_type &last_key() const { return Keys[use - 1]; }
+        // key_type &first_key() { return Keys[0]; }
+        // key_type &last_key() { return Keys[use - 1]; }
+
+        node_type *first_child() const { return Children[0]; }
+        node_type *last_child() const { return Children[use]; }
+    };
 
     b_tree()
     {
@@ -90,20 +181,20 @@ public:
                 q.pop();
 
                 if (p->isLeaf)
-                    out << "<";
+                    cout << "<";
                 else
-                    out << "[";
+                    cout << "[";
                 for (int i = 0; i < p->use; i++) {
                     out << p->Keys[i] << " ";
                     if (!p->isLeaf)
-                        q2.push(p->Children[i]);
+                        q2.push(p->get_child(i));
                 }
                 if (p->isLeaf)
-                    out << ">\t";
+                    cout << ">";
                 else
-                    out << "]\t";
+                    cout << "]";
                 if (p->use != 0 && !p->isLeaf)
-                    q2.push(p->Children[p->use]);
+                    q2.push(p->last_child());
             }
             q = q2;
             out << endl;
@@ -119,6 +210,7 @@ private:
         memset(p, 0, sizeof(node_type));
         return p;
     }
+
     //[.][q  w   e   r][.]       [.][q   c   w   e   r][.]
     //   /  /             -->       /   /   /
     // [*][abcde]                 [*][ab][de]
@@ -128,7 +220,7 @@ private:
     {
         assert(node->use == deg + 1);
         size_t mid = deg / 2;
-        node_type *par = node->parent;
+        node_type *par = node->Parent;
         if (par == nullptr) {
             par = create_node();
             par->isLeaf = false;
@@ -139,37 +231,35 @@ private:
         node->use = deg / 2;
         node_type *rightNode = create_node();
         rightNode->isLeaf = node->isLeaf;
-        rightNode->parent = par;
-        node->parent = par;
+        rightNode->Parent = par;
+        node->Parent = par;
         rightNode->use = deg - deg / 2;
         //std::copy
         for (int j = 0; j < rightNode->use; j++) {
             rightNode->Keys[j] = node->Keys[j + mid + 1];
-            if (!rightNode->isLeaf) {
-                rightNode->Children[j] = node->Children[j + mid + 1];
-                rightNode->Children[j]->parent = rightNode;
-            }
         }
         if (!rightNode->isLeaf) {
-            rightNode->Children[rightNode->use] = node->Children[deg + 1];
-            node->Children[deg + 1]->parent = rightNode;
+            for (int j = 0; j < rightNode->use + 1; j++) {
+                rightNode->Children[j] = node->Children[j + mid + 1];
+                rightNode->Children[j]->Parent = rightNode;
+            }
         }
         // insert to parent node
         size_t i = find_pos(par, node->Keys[mid]);
-        for (int j = par->use; j > i; j--) {
+        // par->use++;
+        // for (int j = par->use - 1; j > i; j--) {
+        //     par->Children[j + 1] = par->Children[j];
+        //     par->Keys[j] = par->Keys[j - 1];
+        // }
+        // par->Children[i + 1] = rightNode;
+        // par->Children[i] = node; //left node
+        // par->Keys[i] = node->Keys[mid];
 
-            par->Children[j + 1] = par->Children[j];
-            par->Keys[j] = par->Keys[j - 1];
-        }
-
-        par->Children[i + 1] = rightNode;
-        par->Children[i] = node; //left node
-
+        par->insert(i, make_pair(node->Keys[mid], node));
+        par->set_child(i + 1, rightNode);
         rightNode->prev = node;
         node->next = rightNode;
 
-        par->Keys[i] = node->Keys[mid];
-        par->use++;
         return par;
     }
 
@@ -181,17 +271,16 @@ private:
         if (n2->use == deg + 1)
             fix(n2);
     };
-    // node is leaf and use<max_slot
-    size_t insert_aux0(node_type *node, const _Key &k, const _Tp &v)
+    //node is leaf and use<max_slot
+    size_t insert_aux0(node_type *node, const key_type &k, const _Tp &v)
     {
         assert(node->isLeaf);
         size_t i = find_pos(node, k);
-        for (int j = node->use; j > i; j--) {
-            node->Keys[j] = node->Keys[j - 1];
-        }
-        node->Keys[i] = k;
+        logLine(i);
+        logLine(k);
+        logLine(node);
+        node->insert_key(i, k);
         (void) v;
-        node->use++;
         return i;
     }
 
@@ -208,6 +297,8 @@ private:
     struct loc {
         node_type *node;
         size_t pos;
+
+        void check() { assert(node && pos < node->use); }
     };
     loc find(const key_type &k)
     {
@@ -222,82 +313,192 @@ private:
         }
     }
 
-    const int min_slot = (deg - 1) / 2;
-    const int max_slot = deg;
+    static const int min_slot = (deg - 1) / 2;
+    static const int max_slot = deg;
     //i must in btree.
-    void remove(const loc &i) {}
-    // i->node is leaf
-    // i->node->use is ok after remove i
-    void remove_aux0(const loc &i)
+    void remove(const loc &i)
     {
-        assert(i->node->use > min_slot);
-        node_type *n = i->node;
-        for (int j = i->pos; j < i->use; j++) {
-            n->Keys[i] = n->_Keys[i + 1];
-            i->node->Children[i] = i->node->Children[i + 1];
-        }
-        i->node->use--;
+        if (i->isLeaf)
+            remove_in_leaf(i);
+        else
+            remove_in_inner(i);
     }
-    // i->node->use is eq to min_slot and its brother's use is gt min_slot
-    // i->node is leaf
-    void remove_aux1(const loc &i)
+
+    //
+    void remove_fix(const node_type &node)
     {
-        assert(i->node->isLeaf);
-        assert(i->node->use == min_slot);
-        assert(i->node->Parent != nullptr);
-
-        node_type *node = i->node;
+        assert(node->use < min_slot);
         node_type *par = node->Parent;
-
+        int x = 0;
+        while (x < par->use + 1 && par->Children[x] != node) {
+            x++;
+        }
         if (node->prev && node->prev->use > min_slot) {
-            // reomove o
-            // index:  x x+1
-            //      [p  a   r]         [p   f   r]
-            //     / \ / \     -->    / \  / \
-            //   [.][lef][nod]      [.][le] [and]
+            // reblance. borrow one from prev
+            // index: x-1 x
+            //      [p  a   ...]         [p   f   ...]
+            //     / \ / \     -->    /  \ / \
+            //   [.][lef][n]        [.] [le][a]
             //
 
-            int x = 0;
-            while (x < par->use + 1 && par->Children[i] != node) {
-                x++;
-            }
-            node_type *left = node->prev;
-            assert(par->Children[x + 1] == node);
-            assert(par->Children[x] == left);
-            for (int j = i - pos; j > 0; j--) {
-                node->Keys[j] = node->Keys[j - 1];
-            }
-            node->Keys[0] = par->Keys[x];
-            par->Keys[x] = left->Keys[left->use];
-            left->use--;
-            node->Keys[x] = par->Keys[r_in_parent];
+            node_type *prev = node->prev;
+            assert(par->Children[x] == node);
+            assert(par->Children[x - 1] == prev);
+
+            node->insert(
+                0, std::make_pair(par->get_key(x - 1), prev->last_child()));
+            par->set_key(x - 1, prev->last_key());
+            prev->use--; //simple remove last key and child
             return;
         }
+
+        // Symmetrically to prev
+        // reblance. borrow one from prev
+        // index: x  x+1
+        //      [p  a   ...]         [p   r   ...]
+        //     / \ / \     -->    /  \ / \
+        //   [.][n][rig]        [.] [na][ig]
+        //
         if (node->next && node->next->use > min_slot) {
-            // TODO:会不会产生死循环，左-借->右-借->左？
-            // 
-            return;
+
+            node_type *next = node->next;
+            assert(par->Children[x] == node);
+            assert(par->Children[x + 1] == next);
+            node->insert_key(node->use, par->get_key(x));
+            par->set_key(x, next->first_key());
+            next->remove(0);
         }
-        assert(0); // no brother is ok
+        // no brother is surplus ,so merge
+        if (node->prev) {
+                       assert(node->prev->use == min_slot);
+ 
+                        merge_child(node->prev,node);
+
+            remove_fix(par);
+        }
+
+        if (node->next) {
+            assert(node->next->use == min_slot);
+            merge_child(node,node->next);
+            remove_fix(par);
+        }
+        assert(0);
+    }
+    //       x-1 x
+    //   [...  a   r]              [...   '  r]
+    //        / \/ \         -->        /  \
+    //      [p][n]                   [pan]
+    void merge_child(node_type *prev, node_type *next)
+    {
+        assert(prev->next == next);
+        assert(next->prev == prev);
+
+        node_type *par = next->Parent;
+        int x = 0;
+        while (x < par->use + 1 && par->Children[x] != next) {
+            x++;
+        }
+        assert(next->prev->use == min_slot);
+        //(min_slot-1)+min_slot+1=2*min_slot<deg
+        prev->use += next->use + 1;
+        prev->Keys[min_slot] = par->Keys[x - 1];
+
+        for (int j = 0; j < next->use; j++) {
+            prev->Keys[j + min_slot] = next->Keys[j];
+            prev->Children[1 + j + min_slot] = next->Children[j];
+        }
+    }
+
+    // i->node is leaf
+    // i->node->use is ok after remove i
+    void remove_in_leaf(const loc &i)
+    {
+
+        assert(i->node->isLeaf);
+
+        //the simplest remove
+        i->node->remove(i->pos);
+        if (i->node->is_ok()) {
+            remove_fix(i->node);
+        }
+    }
+
+    void remove_in_inner(const loc &i)
+    {
+        assert(!i->node->isLeaf);
+        node_type *node = i->node;
+        int p = i->pos;
+        if (node_type *child = node->get_child(p)) {
+            // remove o
+            //      [n  o   d]          [n  i   d]
+            //      / \/ \      -->     / \/ \      --> remove i in [chi]
+            //    [][chi][]           [][chi][]
+            //
+            node->set_key(p, child->last_key());
+
+            remove(loc{child, child->use - 1});
+        }
+        // if (node_type *child = node->get_child(p+1) && child->is_surplus()) {
+        //     node->set_key(p,child->first_key());
+        //     remove(loc{child,0});
+        // }
     }
 
     // i->node->children[i->pos] is leaf and is ok
-    void remove_aux2(const loc&i){
-
+    void remove_aux21(const loc &i)
+    {
+        i.check();
+        assert(!i->isLeaf);
+        if (i->node->Children[i->pos]->use > min_slot) {
+            assert(i->node->Children[i->pos]->isLeaf);
+            node_type *child = i->node->Children[i->pos];
+            i->node->Keys[i->pos] = child->last_key();
+            child->use--;
+        }
+        if (i->node->Children[i->pos + 1]->use > min_slot) {
+            assert(i->node->Children[i->pos + 1]->isLeaf);
+            node_type *child = i->node->Children[i->pos + 1];
+            i->node->Keys[i->pos] = child->first_key();
+            i->node->remove(0);
+            child->use--;
+        }
+        assert(0);
     }
 
     // i->node->children[i->pos] all not ok
     // merge children to one
-    void remove_aux3(){
+    // min_slot*2<deg
+    //[ p   a   r]             [p   '   r]
+    //     / \ /   -->            /
+    //  [le][ri]             [leari]
+    void remove_aux3(const loc &i)
+    {
+        node_type *left_child = i->node->get_child(i->pos);
+        node_type *right_child = i->node->get_child(i->pos + 1);
+        assert(left_child->use == min_slot);
 
+        assert(right_child->use == min_slot);
+        //std::copy
+        for (int j = 0; j < min_slot + 1; j++) {
+            left_child->Keys[j + min_slot + 1] = right_child[j];
+        }
+        left_child->set_key(min_slot, i->node->Keys[i->pos]);
+        left_child->set_child(min_slot, i->node->Children[i]);
+
+        for (int j = i->pos; j < i->use; j++) {
+            i->node->Keys[j] = i->node->Keys[j + 1];
+            i->node->Children[j + 1] = i->node->Children[j + 2];
+        }
+
+        left_child->use = 2 * min_slot + 1;
+
+        remove(loc{left_child, min_slot});
     }
-
 
     node_type *root;
 };
 
-
-
+// simple impleation in c
 // struct BTreeNode {
 //     int Keys[deg + 1];
 //     int Values[deg + 1];
@@ -441,7 +642,7 @@ private:
 //             rightNode->Children[rightNode->use] = node->Children[deg + 1];
 //             node->Children[deg + 1]->Parent = rightNode;
 //         }
-//         // insert to parent node
+//         // insert to Parent node
 //         int i = find_pos(par, node->Keys[mid]);
 //         for (int j = par->use; j > i; j--) {
 
@@ -510,4 +711,4 @@ private:
 // private:
 //     BTreeNode *root;
 // };
-} // namespace gjy
+} // namespace omd
