@@ -1,21 +1,19 @@
 #include <array>
 #include <cassert>
+#include<cmath>
 #include <iostream>
 #include <map>
 #include <queue>
 #include <utility>
-#if 0
-#define logLine(d) printf("%d %d\n", d, __LINE__)
+#if 1
+#define logLine(d) printf("%d %d %s\n", d, __LINE__,__FUNCTION__)
 #else
 #define logLine(x) void(0);
 #endif
 using namespace std;
 namespace omd {
 
-template <class _Key,
-          class _Tp,
-          size_t deg = 4,
-          class _Compare = std::less<_Key>>
+template <class _Key, class _Tp, int deg = 4, class _Compare = std::less<_Key>>
 //class _Alloc = std::allocator<std::pair<const _Key, _Tp>>>
 class b_tree {
 
@@ -97,23 +95,23 @@ public:
 
         void remove(int i)
         {
-            for (int j = i; j < use - 1; j++) {
-                Keys[i] = Keys[i + 1];
+            for (int j = i; j < use-1 ; j++) {
+                Keys[j] = Keys[j + 1];
             }
-
-            if (isLeaf) {
-                for (int j = i; j < use; j++) {
-                    Keys[i] = Keys[i + 1];
+            
+            if (!isLeaf) {
+                for (int j = i; j < use+1; j++) {
+                    Children[j] = Children[j + 1];
                 }
             }
 
             use--;
         }
 
-        size_t find_pos(const key_type &k)
+        int find_pos(const key_type &k)
         {
             assert(this != nullptr);
-            size_t i = 0;
+            int i = 0;
             while (i < use && k > Keys[i])
                 i++;
             return i;
@@ -133,13 +131,20 @@ public:
             return Children[i];
         }
 
-        key_type &first_key() const { return Keys[0]; }
-        key_type &last_key() const { return Keys[use - 1]; }
+        key_type &first_key()  { return Keys[0]; }
+        key_type &last_key()  { return Keys[use - 1]; }
         // key_type &first_key() { return Keys[0]; }
         // key_type &last_key() { return Keys[use - 1]; }
 
         node_type *first_child() const { return Children[0]; }
         node_type *last_child() const { return Children[use]; }
+    };
+    //simple iteator
+    struct loc {
+        node_type *node;
+        int pos;
+
+        void check() { assert(node && pos < node->use); }
     };
 
     b_tree()
@@ -151,7 +156,7 @@ public:
     {
         node_type *p = root;
         while (1) {
-            size_t i = find_pos(p, key);
+            int i = find_pos(p, key);
 
             if (p->isLeaf)
                 break;
@@ -165,6 +170,52 @@ public:
         }
     }
 
+    loc find(const key_type &k)
+    {
+        node_type *p = root;
+        
+        while (p) {
+            int i = find_pos(p, k);
+         
+            if (p->Keys[i] == k)
+                return loc{p, i};
+            if (p->isLeaf)
+                return loc{nullptr, 0};
+            p = p->Children[i];
+        }
+        return loc{nullptr,0};
+    }
+
+    //i must in btree.
+    void remove(const loc &i)
+    {
+        if (i.node->isLeaf)
+            remove_in_leaf(i);
+        else
+            remove_in_inner(i);
+    }
+
+     
+        typedef union{
+            void*n;
+            char b[sizeof(void*)];
+        } char_ptr;
+        
+    
+    static int sqrt(node_type* n){
+        char_ptr p;
+        p.n=n;
+        logLine(n);
+
+        int i=0;
+        for(int i=0;i<sizeof(void*);i++){
+            i+=p.b[i];
+            logLine(p.b[i]);
+        }
+        
+        return i;
+
+    }
     friend ostream &operator<<(ostream &out, const b_tree &bt)
     {
         std::queue<node_type *> q;
@@ -185,7 +236,8 @@ public:
                 else
                     cout << "[";
                 for (int i = 0; i < p->use; i++) {
-                    out << p->Keys[i] << " ";
+                    //out << p->Keys[i] << " ";
+                    out<<sqrt(p->prev)<<"|"<<sqrt(p)<<"|"<<sqrt(p->next);
                     if (!p->isLeaf)
                         q2.push(p->get_child(i));
                 }
@@ -219,7 +271,7 @@ private:
     node_type *split_node_to_parent(node_type *node)
     {
         assert(node->use == deg + 1);
-        size_t mid = deg / 2;
+        int mid = deg / 2;
         node_type *par = node->Parent;
         if (par == nullptr) {
             par = create_node();
@@ -245,7 +297,7 @@ private:
             }
         }
         // insert to parent node
-        size_t i = find_pos(par, node->Keys[mid]);
+        int i = find_pos(par, node->Keys[mid]);
         // par->use++;
         // for (int j = par->use - 1; j > i; j--) {
         //     par->Children[j + 1] = par->Children[j];
@@ -272,63 +324,36 @@ private:
             fix(n2);
     };
     //node is leaf and use<max_slot
-    size_t insert_aux0(node_type *node, const key_type &k, const _Tp &v)
+    int insert_aux0(node_type *node, const key_type &k, const _Tp &v)
     {
         assert(node->isLeaf);
-        size_t i = find_pos(node, k);
-        logLine(i);
-        logLine(k);
-        logLine(node);
+        int i = find_pos(node, k);
         node->insert_key(i, k);
         (void) v;
         return i;
     }
 
-    inline size_t find_pos(node_type *node, key_type k)
+    inline int find_pos(node_type *node, key_type k)
     {
         assert(node != nullptr);
-        size_t i = 0;
+        int i = 0;
         while (i < node->use && k > node->Keys[i])
             i++;
         return i;
     }
 
-    //simple iteator
-    struct loc {
-        node_type *node;
-        size_t pos;
-
-        void check() { assert(node && pos < node->use); }
-    };
-    loc find(const key_type &k)
-    {
-        node_type *p = root;
-        while (p) {
-            size_t i = find_pos(p, k);
-            if (p->Keys[i] == k)
-                return loc{p, i};
-            if (p->isLeaf)
-                return loc{nullptr, 0};
-            p = p->Children[i];
-        }
-    }
-
     static const int min_slot = (deg - 1) / 2;
     static const int max_slot = deg;
-    //i must in btree.
-    void remove(const loc &i)
-    {
-        if (i->isLeaf)
-            remove_in_leaf(i);
-        else
-            remove_in_inner(i);
-    }
 
     //
-    void remove_fix(const node_type &node)
+    void remove_fix( node_type *node)
     {
-        assert(node->use < min_slot);
+        if (node->use >= min_slot)
+            return;
         node_type *par = node->Parent;
+        if(par==nullptr){
+            return;
+        }
         int x = 0;
         while (x < par->use + 1 && par->Children[x] != node) {
             x++;
@@ -349,6 +374,7 @@ private:
                 0, std::make_pair(par->get_key(x - 1), prev->last_child()));
             par->set_key(x - 1, prev->last_key());
             prev->use--; //simple remove last key and child
+            prev->Children[prev->use]->next=nullptr;
             return;
         }
 
@@ -367,21 +393,25 @@ private:
             node->insert_key(node->use, par->get_key(x));
             par->set_key(x, next->first_key());
             next->remove(0);
+            return;
         }
         // no brother is surplus ,so merge
         if (node->prev) {
-                       assert(node->prev->use == min_slot);
- 
-                        merge_child(node->prev,node);
+            assert(node->prev->use == min_slot);
+
+            merge_child(node->prev, node);
 
             remove_fix(par);
+            return;
         }
 
         if (node->next) {
             assert(node->next->use == min_slot);
-            merge_child(node,node->next);
+            merge_child(node, node->next);
             remove_fix(par);
+            return;
         }
+
         assert(0);
     }
     //       x-1 x
@@ -398,15 +428,29 @@ private:
         while (x < par->use + 1 && par->Children[x] != next) {
             x++;
         }
-        assert(next->prev->use == min_slot);
+
         //(min_slot-1)+min_slot+1=2*min_slot<deg
+        int old_use=prev->use;//min_slot-1
         prev->use += next->use + 1;
-        prev->Keys[min_slot] = par->Keys[x - 1];
+        prev->Keys[old_use] = par->Keys[x - 1];
 
         for (int j = 0; j < next->use; j++) {
             prev->Keys[j + min_slot] = next->Keys[j];
             prev->Children[1 + j + min_slot] = next->Children[j];
         }
+
+        for(int j=x-1;j<par->use;j++){
+            par->Keys[j]=par->Keys[j+1];
+            par->Children[j+1]=par->Children[j+2];
+        }
+        par->use--;
+        if(next->next){
+            next->next->prev=prev;
+            prev->next=next->next;
+        }else{
+            prev->next=nullptr;
+        }
+        
     }
 
     // i->node is leaf
@@ -414,20 +458,20 @@ private:
     void remove_in_leaf(const loc &i)
     {
 
-        assert(i->node->isLeaf);
+        assert(i.node->isLeaf);
 
         //the simplest remove
-        i->node->remove(i->pos);
-        if (i->node->is_ok()) {
-            remove_fix(i->node);
+        i.node->remove(i.pos);
+        if (!i.node->is_ok()) {
+            remove_fix(i.node);
         }
     }
 
     void remove_in_inner(const loc &i)
     {
-        assert(!i->node->isLeaf);
-        node_type *node = i->node;
-        int p = i->pos;
+        assert(!i.node->isLeaf);
+        node_type *node = i.node;
+        int p = i.pos;
         if (node_type *child = node->get_child(p)) {
             // remove o
             //      [n  o   d]          [n  i   d]
@@ -444,26 +488,26 @@ private:
         // }
     }
 
-    // i->node->children[i->pos] is leaf and is ok
-    void remove_aux21(const loc &i)
-    {
-        i.check();
-        assert(!i->isLeaf);
-        if (i->node->Children[i->pos]->use > min_slot) {
-            assert(i->node->Children[i->pos]->isLeaf);
-            node_type *child = i->node->Children[i->pos];
-            i->node->Keys[i->pos] = child->last_key();
-            child->use--;
-        }
-        if (i->node->Children[i->pos + 1]->use > min_slot) {
-            assert(i->node->Children[i->pos + 1]->isLeaf);
-            node_type *child = i->node->Children[i->pos + 1];
-            i->node->Keys[i->pos] = child->first_key();
-            i->node->remove(0);
-            child->use--;
-        }
-        assert(0);
-    }
+    // // i->node->children[i->pos] is leaf and is ok
+    // void remove_aux21(const loc &i)
+    // {
+    //     i.check();
+    //     assert(!i->isLeaf);
+    //     if (i->node->Children[i->pos]->use > min_slot) {
+    //         assert(i->node->Children[i->pos]->isLeaf);
+    //         node_type *child = i->node->Children[i->pos];
+    //         i->node->Keys[i->pos] = child->last_key();
+    //         child->use--;
+    //     }
+    //     if (i->node->Children[i->pos + 1]->use > min_slot) {
+    //         assert(i->node->Children[i->pos + 1]->isLeaf);
+    //         node_type *child = i->node->Children[i->pos + 1];
+    //         i->node->Keys[i->pos] = child->first_key();
+    //         i->node->remove(0);
+    //         child->use--;
+    //     }
+    //     assert(0);
+    // }
 
     // i->node->children[i->pos] all not ok
     // merge children to one
@@ -471,29 +515,29 @@ private:
     //[ p   a   r]             [p   '   r]
     //     / \ /   -->            /
     //  [le][ri]             [leari]
-    void remove_aux3(const loc &i)
-    {
-        node_type *left_child = i->node->get_child(i->pos);
-        node_type *right_child = i->node->get_child(i->pos + 1);
-        assert(left_child->use == min_slot);
+    //     void remove_aux3(const loc &i)
+    //     {
+    //         node_type *left_child = i->node->get_child(i->pos);
+    //         node_type *right_child = i->node->get_child(i->pos + 1);
+    //         assert(left_child->use == min_slot);
 
-        assert(right_child->use == min_slot);
-        //std::copy
-        for (int j = 0; j < min_slot + 1; j++) {
-            left_child->Keys[j + min_slot + 1] = right_child[j];
-        }
-        left_child->set_key(min_slot, i->node->Keys[i->pos]);
-        left_child->set_child(min_slot, i->node->Children[i]);
+    //         assert(right_child->use == min_slot);
+    //         //std::copy
+    //         for (int j = 0; j < min_slot + 1; j++) {
+    //             left_child->Keys[j + min_slot + 1] = right_child[j];
+    //         }
+    //         left_child->set_key(min_slot, i->node->Keys[i->pos]);
+    //         left_child->set_child(min_slot, i->node->Children[i]);
 
-        for (int j = i->pos; j < i->use; j++) {
-            i->node->Keys[j] = i->node->Keys[j + 1];
-            i->node->Children[j + 1] = i->node->Children[j + 2];
-        }
+    //         for (int j = i->pos; j < i->use; j++) {
+    //             i->node->Keys[j] = i->node->Keys[j + 1];
+    //             i->node->Children[j + 1] = i->node->Children[j + 2];
+    //         }
 
-        left_child->use = 2 * min_slot + 1;
+    //         left_child->use = 2 * min_slot + 1;
 
-        remove(loc{left_child, min_slot});
-    }
+    //         remove(loc{left_child, min_slot});
+    //     }
 
     node_type *root;
 };
