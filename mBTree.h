@@ -1,12 +1,12 @@
 #include <array>
 #include <cassert>
-#include<cmath>
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <queue>
 #include <utility>
 #if 1
-#define logLine(d) printf("%d %d %s\n", d, __LINE__,__FUNCTION__)
+#define logLine(d) printf("%d %d %s\n", d, __LINE__, __FUNCTION__)
 #else
 #define logLine(x) void(0);
 #endif
@@ -48,7 +48,8 @@ public:
         node_type *Parent;
         key_type Keys[deg + 1]; //last is sentiel
         node_type *Children[deg + 2];
-
+        int get_id() { return this ? id : 0; }
+        int id;
         bool is_ok() { return use <= max_slot && use >= min_slot; }
         bool is_surplus() { return use > min_slot; };
 
@@ -61,8 +62,16 @@ public:
                 Keys[j] = Keys[j - 1];
                 Children[j] = Children[j - 1];
             }
+
             Keys[i] = val.first;
+            //set_child(i,val.second);
+
             Children[i] = val.second;
+
+            // if(i>0){
+            //     Children[i]->prev=Children[i-1];
+            //     Children[i]->prev=Children
+            // }
         }
 
         const key_type get_key(int i) const
@@ -90,17 +99,39 @@ public:
             use--;
         }
 
-        void set_child(int i, node_type *n) { Children[i] = n; }
+        void set_child(int i, node_type *n)
+        {
+            // if(i>0){
+            //     n->prev=Children[i-1];
+            // }else{
+            //     n->prev=nullptr;
+            // }
+
+            // if(i<use){
+            //     n->next=Children[i]->next;
+            // }else{
+            //     n->next=nullptr;
+            // }
+
+            // if(n->prev){
+            //     n->prev->next=n;
+            // }
+            // if(n->next){
+            //     n->next->prev=n;
+            // }
+            Children[i] = n;
+            n->Parent=this;
+        }
         node_type *get_child(int i) const { return Children[i]; }
 
         void remove(int i)
         {
-            for (int j = i; j < use-1 ; j++) {
+            for (int j = i; j < use - 1; j++) {
                 Keys[j] = Keys[j + 1];
             }
-            
+
             if (!isLeaf) {
-                for (int j = i; j < use+1; j++) {
+                for (int j = i; j < use + 1; j++) {
                     Children[j] = Children[j + 1];
                 }
             }
@@ -131,8 +162,8 @@ public:
             return Children[i];
         }
 
-        key_type &first_key()  { return Keys[0]; }
-        key_type &last_key()  { return Keys[use - 1]; }
+        key_type &first_key() { return Keys[0]; }
+        key_type &last_key() { return Keys[use - 1]; }
         // key_type &first_key() { return Keys[0]; }
         // key_type &last_key() { return Keys[use - 1]; }
 
@@ -173,17 +204,17 @@ public:
     loc find(const key_type &k)
     {
         node_type *p = root;
-        
+
         while (p) {
             int i = find_pos(p, k);
-         
+
             if (p->Keys[i] == k)
                 return loc{p, i};
             if (p->isLeaf)
                 return loc{nullptr, 0};
             p = p->Children[i];
         }
-        return loc{nullptr,0};
+        return loc{nullptr, 0};
     }
 
     //i must in btree.
@@ -195,26 +226,20 @@ public:
             remove_in_inner(i);
     }
 
-     
-        typedef union{
-            void*n;
-            char b[sizeof(void*)];
-        } char_ptr;
-        
-    
-    static int sqrt(node_type* n){
+    typedef union {
+        void *ptr;
+        char b[sizeof(void *)];
+    } char_ptr;
+
+    static int sqrt(void *n)
+    {
         char_ptr p;
-        p.n=n;
-        logLine(n);
-
-        int i=0;
-        for(int i=0;i<sizeof(void*);i++){
-            i+=p.b[i];
-            logLine(p.b[i]);
+        p.ptr = n;
+        int ret = 0;
+        for (int i = 0; i < sizeof(void *); i++) {
+            i += p.b[i];
         }
-        
-        return i;
-
+        return ret;
     }
     friend ostream &operator<<(ostream &out, const b_tree &bt)
     {
@@ -235,9 +260,9 @@ public:
                     cout << "<";
                 else
                     cout << "[";
+                //out<<p->prev->get_id()<<"|"<<p->get_id()<<"|"<<p->next->get_id();
                 for (int i = 0; i < p->use; i++) {
-                    //out << p->Keys[i] << " ";
-                    out<<sqrt(p->prev)<<"|"<<sqrt(p)<<"|"<<sqrt(p->next);
+                    out << p->Keys[i] << " ";
                     if (!p->isLeaf)
                         q2.push(p->get_child(i));
                 }
@@ -258,8 +283,12 @@ public:
 private:
     inline node_type *create_node()
     {
+        static int i = 1;
         node_type *p = new node_type;
+        i++;
         memset(p, 0, sizeof(node_type));
+        p->id = i;
+
         return p;
     }
 
@@ -298,20 +327,22 @@ private:
         }
         // insert to parent node
         int i = find_pos(par, node->Keys[mid]);
-        // par->use++;
-        // for (int j = par->use - 1; j > i; j--) {
-        //     par->Children[j + 1] = par->Children[j];
-        //     par->Keys[j] = par->Keys[j - 1];
-        // }
-        // par->Children[i + 1] = rightNode;
-        // par->Children[i] = node; //left node
-        // par->Keys[i] = node->Keys[mid];
-
         par->insert(i, make_pair(node->Keys[mid], node));
         par->set_child(i + 1, rightNode);
         rightNode->prev = node;
-        node->next = rightNode;
+        if (node->next) {
+            node->next->prev = rightNode;
+            rightNode->next = node->next;
+        } else {
+            rightNode->next = nullptr;
+        }
 
+        if (!node->isLeaf) {
+            node->last_child()->next = nullptr;
+            rightNode->first_child()->prev = nullptr;
+        }
+
+        node->next = rightNode;
         return par;
     }
 
@@ -346,12 +377,18 @@ private:
     static const int max_slot = deg;
 
     //
-    void remove_fix( node_type *node)
+    void remove_fix(node_type *node)
     {
         if (node->use >= min_slot)
             return;
         node_type *par = node->Parent;
-        if(par==nullptr){
+        if (par == nullptr) { //root
+            if (node->use == 0) {
+                if(!node->isLeaf){
+                root = node->Children[0];
+                root->Parent = nullptr;
+                }
+            }
             return;
         }
         int x = 0;
@@ -362,8 +399,8 @@ private:
             // reblance. borrow one from prev
             // index: x-1 x
             //      [p  a   ...]         [p   f   ...]
-            //     / \ / \     -->    /  \ / \
-            //   [.][lef][n]        [.] [le][a]
+            //     / \ / \     -->       /  \ / \
+            //   [.][lef][n]           [.][lef][a]
             //
 
             node_type *prev = node->prev;
@@ -372,9 +409,17 @@ private:
 
             node->insert(
                 0, std::make_pair(par->get_key(x - 1), prev->last_child()));
+
+            if (!node->isLeaf && node->use > 0) {
+                node->Children[0]->next = node->Children[1];
+                node->Children[0]->prev = nullptr;
+                node->Children[1]->prev = node->Children[0];
+            }
+
             par->set_key(x - 1, prev->last_key());
             prev->use--; //simple remove last key and child
-            prev->Children[prev->use]->next=nullptr;
+            if (!prev->isLeaf)
+                prev->Children[prev->use]->next = nullptr;
             return;
         }
 
@@ -384,15 +429,27 @@ private:
         //      [p  a   ...]         [p   r   ...]
         //     / \ / \     -->    /  \ / \
         //   [.][n][rig]        [.] [na][ig]
-        //
+        //         /
+        //       [c]
         if (node->next && node->next->use > min_slot) {
 
             node_type *next = node->next;
             assert(par->Children[x] == node);
             assert(par->Children[x + 1] == next);
             node->insert_key(node->use, par->get_key(x));
+            node_type *child_r = next->first_child();
+
+            if (!node->isLeaf) {
+                node->Children[node->use] = child_r;
+                node->Children[node->use]->Parent=node;
+                node->Children[node->use - 1]->next = node->Children[node->use];
+                node->Children[node->use]->prev = node->Children[node->use - 1];
+                node->Children[node->use]->next = nullptr;
+            }
             par->set_key(x, next->first_key());
             next->remove(0);
+            if (!next->isLeaf)
+                next->Children[0]->prev = nullptr;
             return;
         }
         // no brother is surplus ,so merge
@@ -400,7 +457,10 @@ private:
             assert(node->prev->use == min_slot);
 
             merge_child(node->prev, node);
-
+            // if (par == root&&par->use==) {
+            //     root = node->prev;
+            //     root->Parent = nullptr;
+            // }
             remove_fix(par);
             return;
         }
@@ -408,10 +468,15 @@ private:
         if (node->next) {
             assert(node->next->use == min_slot);
             merge_child(node, node->next);
+            // if (par == root) {
+            //     root = node;
+            //     root->Parent = nullptr;
+            // }
             remove_fix(par);
             return;
         }
 
+        printf("next:%x,\tprev:%x\n", node->next, node->prev);
         assert(0);
     }
     //       x-1 x
@@ -430,27 +495,36 @@ private:
         }
 
         //(min_slot-1)+min_slot+1=2*min_slot<deg
-        int old_use=prev->use;//min_slot-1
+        int old_use = prev->use; //min_slot-1
         prev->use += next->use + 1;
         prev->Keys[old_use] = par->Keys[x - 1];
 
         for (int j = 0; j < next->use; j++) {
             prev->Keys[j + min_slot] = next->Keys[j];
-            prev->Children[1 + j + min_slot] = next->Children[j];
         }
 
-        for(int j=x-1;j<par->use;j++){
-            par->Keys[j]=par->Keys[j+1];
-            par->Children[j+1]=par->Children[j+2];
+        if (!prev->isLeaf) {
+            for (int j = 0; j < next->use + 1; j++) {
+                prev->Children[j + min_slot] = next->Children[j];
+                prev->Children[j+min_slot]->Parent=prev;
+            }
+
+            prev->Children[min_slot-1]->next=prev->Children[min_slot];
+            prev->Children[min_slot]->prev=prev->Children[min_slot-1];
+
+        }
+
+        for (int j = x - 1; j < par->use; j++) {
+            par->Keys[j] = par->Keys[j + 1];
+            par->Children[j + 1] = par->Children[j + 2];
         }
         par->use--;
-        if(next->next){
-            next->next->prev=prev;
-            prev->next=next->next;
-        }else{
-            prev->next=nullptr;
+        if (next->next) {
+            next->next->prev = prev;
+            prev->next = next->next;
+        } else {
+            prev->next = nullptr;
         }
-        
     }
 
     // i->node is leaf
