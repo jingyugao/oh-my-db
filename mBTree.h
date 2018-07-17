@@ -41,6 +41,9 @@ public:
     typedef std::pair<key_type, data_type> value_type;
     typedef _Compare key_compare;
 
+    static const int min_slot = (deg - 1) / 2;
+    static const int max_slot = deg;
+
     struct node_type {
         bool isLeaf;
         int use;
@@ -55,23 +58,19 @@ public:
 
         void insert(int i, std::pair<key_type, node_type *> val)
         {
-
             use++;
-            Children[use] = Children[use - 1];
             for (int j = use - 1; j > i; j--) {
                 Keys[j] = Keys[j - 1];
-                Children[j] = Children[j - 1];
             }
-
             Keys[i] = val.first;
-            //set_child(i,val.second);
-
-            Children[i] = val.second;
-
-            // if(i>0){
-            //     Children[i]->prev=Children[i-1];
-            //     Children[i]->prev=Children
-            // }
+            if (!isLeaf) {
+                for (int j = use ; j > i; j--) {
+                    Children[j] = Children[j - 1];
+                }
+                Children[i] = val.second;
+                // Children[i]->prev=Children[i-1];
+                // Children[i-1]->next=Children[i];
+            }
         }
 
         const key_type get_key(int i) const
@@ -84,7 +83,6 @@ public:
 
         void insert_key(int i, const key_type &k)
         {
-
             use++;
             for (int j = use - 1; j > i; j--) {
                 Keys[j] = Keys[j - 1];
@@ -120,7 +118,7 @@ public:
             //     n->next->prev=n;
             // }
             Children[i] = n;
-            n->Parent=this;
+            n->Parent = this;
         }
         node_type *get_child(int i) const { return Children[i]; }
 
@@ -139,14 +137,14 @@ public:
             use--;
         }
 
-        int find_pos(const key_type &k)
-        {
-            assert(this != nullptr);
-            int i = 0;
-            while (i < use && k > Keys[i])
-                i++;
-            return i;
-        }
+        // int find_pos(const key_type &k)
+        // {
+        //     assert(this != nullptr);
+        //     int i = 0;
+        //     while (i < use && k > Keys[i])
+        //         i++;
+        //     return i;
+        // }
 
         int find_child(node_type *child)
         {
@@ -197,7 +195,7 @@ public:
         insert_aux0(p, key, val);
 
         if (p->use == deg + 1) {
-            fix(p);
+            insert_fix(p);
         }
     }
 
@@ -281,6 +279,7 @@ public:
     }
 
 private:
+    inline void destroy_node(node_type *n) { delete n; }
     inline node_type *create_node()
     {
         static int i = 1;
@@ -347,12 +346,12 @@ private:
     }
 
     //node is full
-    void fix(node_type *node)
+    void insert_fix(node_type *node)
     {
         assert(node->use == deg + 1);
         node_type *n2 = split_node_to_parent(node);
         if (n2->use == deg + 1)
-            fix(n2);
+            insert_fix(n2);
     };
     //node is leaf and use<max_slot
     int insert_aux0(node_type *node, const key_type &k, const _Tp &v)
@@ -373,9 +372,6 @@ private:
         return i;
     }
 
-    static const int min_slot = (deg - 1) / 2;
-    static const int max_slot = deg;
-
     //
     void remove_fix(node_type *node)
     {
@@ -384,9 +380,9 @@ private:
         node_type *par = node->Parent;
         if (par == nullptr) { //root
             if (node->use == 0) {
-                if(!node->isLeaf){
-                root = node->Children[0];
-                root->Parent = nullptr;
+                if (!node->isLeaf) {
+                    root = node->Children[0];
+                    root->Parent = nullptr;
                 }
             }
             return;
@@ -441,7 +437,7 @@ private:
 
             if (!node->isLeaf) {
                 node->Children[node->use] = child_r;
-                node->Children[node->use]->Parent=node;
+                node->Children[node->use]->Parent = node;
                 node->Children[node->use - 1]->next = node->Children[node->use];
                 node->Children[node->use]->prev = node->Children[node->use - 1];
                 node->Children[node->use]->next = nullptr;
@@ -476,7 +472,7 @@ private:
             return;
         }
 
-        printf("next:%x,\tprev:%x\n", node->next, node->prev);
+        printf("next:%p,\tprev:%p\n", node->next, node->prev);
         assert(0);
     }
     //       x-1 x
@@ -506,12 +502,11 @@ private:
         if (!prev->isLeaf) {
             for (int j = 0; j < next->use + 1; j++) {
                 prev->Children[j + min_slot] = next->Children[j];
-                prev->Children[j+min_slot]->Parent=prev;
+                prev->Children[j + min_slot]->Parent = prev;
             }
 
-            prev->Children[min_slot-1]->next=prev->Children[min_slot];
-            prev->Children[min_slot]->prev=prev->Children[min_slot-1];
-
+            prev->Children[min_slot - 1]->next = prev->Children[min_slot];
+            prev->Children[min_slot]->prev = prev->Children[min_slot - 1];
         }
 
         for (int j = x - 1; j < par->use; j++) {
@@ -525,6 +520,8 @@ private:
         } else {
             prev->next = nullptr;
         }
+
+        destroy_node(next);
     }
 
     // i->node is leaf
@@ -556,277 +553,8 @@ private:
 
             remove(loc{child, child->use - 1});
         }
-        // if (node_type *child = node->get_child(p+1) && child->is_surplus()) {
-        //     node->set_key(p,child->first_key());
-        //     remove(loc{child,0});
-        // }
     }
-
-    // // i->node->children[i->pos] is leaf and is ok
-    // void remove_aux21(const loc &i)
-    // {
-    //     i.check();
-    //     assert(!i->isLeaf);
-    //     if (i->node->Children[i->pos]->use > min_slot) {
-    //         assert(i->node->Children[i->pos]->isLeaf);
-    //         node_type *child = i->node->Children[i->pos];
-    //         i->node->Keys[i->pos] = child->last_key();
-    //         child->use--;
-    //     }
-    //     if (i->node->Children[i->pos + 1]->use > min_slot) {
-    //         assert(i->node->Children[i->pos + 1]->isLeaf);
-    //         node_type *child = i->node->Children[i->pos + 1];
-    //         i->node->Keys[i->pos] = child->first_key();
-    //         i->node->remove(0);
-    //         child->use--;
-    //     }
-    //     assert(0);
-    // }
-
-    // i->node->children[i->pos] all not ok
-    // merge children to one
-    // min_slot*2<deg
-    //[ p   a   r]             [p   '   r]
-    //     / \ /   -->            /
-    //  [le][ri]             [leari]
-    //     void remove_aux3(const loc &i)
-    //     {
-    //         node_type *left_child = i->node->get_child(i->pos);
-    //         node_type *right_child = i->node->get_child(i->pos + 1);
-    //         assert(left_child->use == min_slot);
-
-    //         assert(right_child->use == min_slot);
-    //         //std::copy
-    //         for (int j = 0; j < min_slot + 1; j++) {
-    //             left_child->Keys[j + min_slot + 1] = right_child[j];
-    //         }
-    //         left_child->set_key(min_slot, i->node->Keys[i->pos]);
-    //         left_child->set_child(min_slot, i->node->Children[i]);
-
-    //         for (int j = i->pos; j < i->use; j++) {
-    //             i->node->Keys[j] = i->node->Keys[j + 1];
-    //             i->node->Children[j + 1] = i->node->Children[j + 2];
-    //         }
-
-    //         left_child->use = 2 * min_slot + 1;
-
-    //         remove(loc{left_child, min_slot});
-    //     }
-
     node_type *root;
 };
 
-// simple impleation in c
-// struct BTreeNode {
-//     int Keys[deg + 1];
-//     int Values[deg + 1];
-//     BTreeNode *Children[deg + 2];
-//     BTreeNode *Parent;
-//     bool isLeaf;
-//     int use;
-// };
-// BTreeNode *createNode()
-// {
-//     BTreeNode *r = new BTreeNode;
-//     memset(r, 0, sizeof(BTreeNode));
-//     return r;
-// };
-// struct loc {
-//     BTreeNode *node;
-//     int offset;
-// };
-
-// loc bfind(BTreeNode *n, int k)
-// {
-//     int i = 0;
-//     while (i < deg && k > n->Keys[i])
-//         i++;
-
-//     if (i < deg && k == n->Keys[i])
-//         return loc{n, i};
-
-//     if (n->isLeaf)
-//         return loc{nullptr, 0};
-//     return bfind(n->Children[i], k);
-// }
-
-// inline int find_pos(BTreeNode *node, int k)
-// {
-//     assert(node != nullptr);
-//     int i = 0;
-//     while (i < node->use && k > node->Keys[i])
-//         i++;
-//     return i;
-// }
-// class BTree {
-// public:
-//     BTree()
-//     {
-//         root = createNode();
-//         root->use = 0;
-//         root->isLeaf = true;
-//     }
-//     loc find(int k)
-//     {
-//         //        if (root == nullptr) {
-//         //            return loc{nullptr, 0};
-//         //        }
-//         //
-//         //        BTreeNode *p = root;
-//         //
-//         //        while (p) {
-//         //
-//         //            auto Ks = root->Keys;
-//         //            int mid = Ks.size();
-//         //            for (int i = 0; i < Ks.size(); i++) {
-//         //                if (k < Ks[i]) {
-//         //                    mid = i;
-//         //                    break;
-//         //                }
-//         //            }
-//         //            if (p->isLeaf){
-//         //                return loc{p,mid};
-//         //            }
-//         //            p = p->Children[mid];
-//         //        }
-//         return loc{nullptr, 0};
-//     }
-//     //Dont mind insert mutli values
-//     void insert(int key, int val)
-//     {
-
-//         BTreeNode *p = root;
-//         while (1) {
-//             int i = find_pos(p, key);
-
-//             if (p->isLeaf)
-//                 break;
-//             p = p->Children[i];
-//         }
-
-//         insert_aux0(p, key, val);
-
-//         if (p->use == deg + 1) {
-//             fix(p);
-//         }
-//     }
-
-//     //simple insert,node is leaf
-//     int insert_aux0(BTreeNode *node, int key, int val)
-//     {
-//         int i = find_pos(node, key);
-
-//         for (int j = node->use; j > i; j--) {
-//             node->Keys[j] = node->Keys[j - 1];
-//             node->Values[j] = node->Values[j - 1];
-//         }
-//         node->Keys[i] = key;
-//         node->use++;
-//         return i;
-//     }
-
-//     //[.][q  w   e   r][.]       [.][q   c   w   e   r][.]
-//     //   /  /             -->       /   /   /
-//     // [*][abcde]                 [*][ab][de]
-//     //
-//     BTreeNode *split_node_to_parent(BTreeNode *node)
-//     {
-//         assert(node->use == deg + 1);
-//         int mid = deg / 2;
-//         BTreeNode *par = node->Parent;
-//         if (par == nullptr) {
-//             par = createNode();
-//             par->isLeaf = false;
-//             par->use = 0;
-//             root = par;
-//         }
-//         //insert_aux0(node, node->Keys[mid], 0);
-//         node->use = deg / 2;
-
-//         BTreeNode *rightNode = createNode();
-//         rightNode->isLeaf = node->isLeaf;
-//         rightNode->Parent = par;
-//         node->Parent = par;
-//         rightNode->use = deg - deg / 2;
-//         //std::copy
-//         for (int j = 0; j < rightNode->use; j++) {
-//             rightNode->Keys[j] = node->Keys[j + mid + 1];
-//             if (!rightNode->isLeaf) {
-//                 rightNode->Children[j] = node->Children[j + mid + 1];
-//                 rightNode->Children[j]->Parent = rightNode;
-//             }
-//         }
-//         if (!rightNode->isLeaf) {
-//             rightNode->Children[rightNode->use] = node->Children[deg + 1];
-//             node->Children[deg + 1]->Parent = rightNode;
-//         }
-//         // insert to Parent node
-//         int i = find_pos(par, node->Keys[mid]);
-//         for (int j = par->use; j > i; j--) {
-
-//             par->Children[j + 1] = par->Children[j];
-//             par->Keys[j] = par->Keys[j - 1];
-//             par->Values[j] = par->Values[j - 1];
-//         }
-
-//         par->Children[i + 1] = rightNode;
-//         par->Children[i] = node; //left node
-//         par->Keys[i] = node->Keys[mid];
-//         par->use++;
-//         return par;
-//     }
-
-//     //node is full
-//     void fix(BTreeNode *node)
-//     {
-//         assert(node->use == deg + 1);
-//         BTreeNode *n2 = split_node_to_parent(node);
-//         if (n2->use == deg + 1)
-//             fix(n2);
-//     };
-//     void print()
-//     {
-
-//         logLine(-1);
-//         std::queue<BTreeNode *> q;
-
-//         BTreeNode *p = nullptr;
-//         if (root == nullptr)
-//             return;
-//         q.push(root);
-//         while (!q.empty()) {
-//             queue<BTreeNode *> q2;
-//             while (!q.empty()) {
-
-//                 p = q.front();
-//                 q.pop();
-
-//                 logLine(0);
-//                 if (p->isLeaf)
-//                     printf("<");
-//                 else
-//                     printf("[");
-
-//                 for (int i = 0; i < p->use; i++) {
-//                     printf("%d ", p->Keys[i]);
-//                     if (!p->isLeaf)
-//                         q2.push(p->Children[i]);
-//                 }
-//                 if (p->isLeaf)
-//                     printf(">\t");
-//                 else
-//                     printf("]\t");
-//                 if (p->use != 0 && !p->isLeaf)
-//                     q2.push(p->Children[p->use]);
-//             }
-//             q = q2;
-//             printf("\n");
-//             logLine(q.size());
-//         }
-//         logLine(-2);
-//     }
-
-// private:
-//     BTreeNode *root;
-// };
 } // namespace omd
