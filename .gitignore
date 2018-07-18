@@ -40,4 +40,5 @@ CMakeCache.txt
 oh-my-db
 b_plus_tree_test
 *.dSYM/
-btree
+parser_test
+btree_test
