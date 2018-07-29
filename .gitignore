@@ -42,3 +42,6 @@ b_plus_tree_test
 *.dSYM/
 parser_test
 btree_test
+parser/lex_yacc_example_2013_4_28.rar
+parser/sql.test
+
