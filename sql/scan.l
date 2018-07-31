@@ -11,6 +11,7 @@ typedef struct{
     const char*token_str;
     int token_type;
 }token_struct;
+
 token_struct token_map[]={
     {"create",CREATE},
     {"drop",DROP},

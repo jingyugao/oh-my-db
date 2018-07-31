@@ -1,0 +1,660 @@
+Terminals which are not used
+
+   CHAR
+   NONE
+   DROP
+   TABLE
+   INDEX
+   HELP
+   DELET
+   UPDATE
+   XOR
+
+
+State 34 conflicts: 2 shift/reduce
+
+
+Grammar
+
+    0 $accept: sql $end
+
+    1 sql: ddl
+    2    | dml
+
+    3 ddl: create_statmen
+
+    4 dml: insert_statment
+    5    | query_statment
+
+    6 create_statmen: CREATE table
+
+    7 insert_statment: INSERT INTO table VALUES '(' insert_values ')'
+
+    8 insert_values: insert_values ',' sql_value
+    9              | sql_value
+
+   10 query_statment: select_statment WHERE cond_statment
+
+   11 select_statment: SELECT column_list FROM table_list
+
+   12 cond_statment: cond_statment AND cmp_statment
+   13              | cond_statment OR cmp_statment
+   14              | NOT cond_statment
+   15              | '(' cond_statment ')'
+   16              | cmp_statment
+
+   17 cmp_statment: column op column
+
+   18 column_list: column
+   19            | column_list ',' column
+   20            | '*'
+
+   21 sql_value: INT
+   22          | FLOAT
+   23          | LITERAL
+
+   24 table_list: table_list ',' table
+   25           | table
+
+   26 table: WORD
+
+   27 column: WORD
+   28       | WORD '.' WORD
+
+   29 op: EQ
+   30   | LT
+   31   | GT
+   32   | LE
+   33   | GE
+   34   | NE
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 7 15
+')' (41) 7 15
+'*' (42) 20
+',' (44) 8 19 24
+'.' (46) 28
+error (256)
+WORD (258) 26 27 28
+CHAR (259)
+LITERAL (260) 23
+INT (261) 21
+FLOAT (262) 22
+NONE (263)
+CREATE (264) 6
+DROP (265)
+TABLE (266)
+INDEX (267)
+HELP (268)
+VALUES (269) 7
+INSERT (270) 7
+DELET (271)
+UPDATE (272)
+INTO (273) 7
+AND (274) 12
+XOR (275)
+OR (276) 13
+NOT (277) 14
+EQ (278) 29
+NE (279) 34
+LT (280) 30
+LE (281) 32
+GT (282) 31
+GE (283) 33
+SELECT (284) 11
+FROM (285) 11
+WHERE (286) 10
+
+
+Nonterminals, with rules where they appear
+
+$accept (37)
+    on left: 0
+sql (38)
+    on left: 1 2, on right: 0
+ddl (39)
+    on left: 3, on right: 1
+dml (40)
+    on left: 4 5, on right: 2
+create_statmen (41)
+    on left: 6, on right: 3
+insert_statment (42)
+    on left: 7, on right: 4
+insert_values (43)
+    on left: 8 9, on right: 7 8
+query_statment (44)
+    on left: 10, on right: 5
+select_statment (45)
+    on left: 11, on right: 10
+cond_statment (46)
+    on left: 12 13 14 15 16, on right: 10 12 13 14 15
+cmp_statment (47)
+    on left: 17, on right: 12 13 16
+column_list (48)
+    on left: 18 19 20, on right: 11 19
+sql_value (49)
+    on left: 21 22 23, on right: 8 9
+table_list (50)
+    on left: 24 25, on right: 11 24
+table (51)
+    on left: 26, on right: 6 7 24 25
+column (52)
+    on left: 27 28, on right: 17 18 19
+op (53)
+    on left: 29 30 31 32 33 34, on right: 17
+
+
+state 0
+
+    0 $accept: . sql $end
+
+    CREATE  shift, and go to state 1
+    INSERT  shift, and go to state 2
+    SELECT  shift, and go to state 3
+
+    sql              go to state 4
+    ddl              go to state 5
+    dml              go to state 6
+    create_statmen   go to state 7
+    insert_statment  go to state 8
+    query_statment   go to state 9
+    select_statment  go to state 10
+
+
+state 1
+
+    6 create_statmen: CREATE . table
+
+    WORD  shift, and go to state 11
+
+    table  go to state 12
+
+
+state 2
+
+    7 insert_statment: INSERT . INTO table VALUES '(' insert_values ')'
+
+    INTO  shift, and go to state 13
+
+
+state 3
+
+   11 select_statment: SELECT . column_list FROM table_list
+
+    WORD  shift, and go to state 14
+    '*'   shift, and go to state 15
+
+    column_list  go to state 16
+    column       go to state 17
+
+
+state 4
+
+    0 $accept: sql . $end
+
+    $end  shift, and go to state 18
+
+
+state 5
+
+    1 sql: ddl .
+
+    $default  reduce using rule 1 (sql)
+
+
+state 6
+
+    2 sql: dml .
+
+    $default  reduce using rule 2 (sql)
+
+
+state 7
+
+    3 ddl: create_statmen .
+
+    $default  reduce using rule 3 (ddl)
+
+
+state 8
+
+    4 dml: insert_statment .
+
+    $default  reduce using rule 4 (dml)
+
+
+state 9
+
+    5 dml: query_statment .
+
+    $default  reduce using rule 5 (dml)
+
+
+state 10
+
+   10 query_statment: select_statment . WHERE cond_statment
+
+    WHERE  shift, and go to state 19
+
+
+state 11
+
+   26 table: WORD .
+
+    $default  reduce using rule 26 (table)
+
+
+state 12
+
+    6 create_statmen: CREATE table .
+
+    $default  reduce using rule 6 (create_statmen)
+
+
+state 13
+
+    7 insert_statment: INSERT INTO . table VALUES '(' insert_values ')'
+
+    WORD  shift, and go to state 11
+
+    table  go to state 20
+
+
+state 14
+
+   27 column: WORD .
+   28       | WORD . '.' WORD
+
+    '.'  shift, and go to state 21
+
+    $default  reduce using rule 27 (column)
+
+
+state 15
+
+   20 column_list: '*' .
+
+    $default  reduce using rule 20 (column_list)
+
+
+state 16
+
+   11 select_statment: SELECT column_list . FROM table_list
+   19 column_list: column_list . ',' column
+
+    FROM  shift, and go to state 22
+    ','   shift, and go to state 23
+
+
+state 17
+
+   18 column_list: column .
+
+    $default  reduce using rule 18 (column_list)
+
+
+state 18
+
+    0 $accept: sql $end .
+
+    $default  accept
+
+
+state 19
+
+   10 query_statment: select_statment WHERE . cond_statment
+
+    WORD  shift, and go to state 14
+    NOT   shift, and go to state 24
+    '('   shift, and go to state 25
+
+    cond_statment  go to state 26
+    cmp_statment   go to state 27
+    column         go to state 28
+
+
+state 20
+
+    7 insert_statment: INSERT INTO table . VALUES '(' insert_values ')'
+
+    VALUES  shift, and go to state 29
+
+
+state 21
+
+   28 column: WORD '.' . WORD
+
+    WORD  shift, and go to state 30
+
+
+state 22
+
+   11 select_statment: SELECT column_list FROM . table_list
+
+    WORD  shift, and go to state 11
+
+    table_list  go to state 31
+    table       go to state 32
+
+
+state 23
+
+   19 column_list: column_list ',' . column
+
+    WORD  shift, and go to state 14
+
+    column  go to state 33
+
+
+state 24
+
+   14 cond_statment: NOT . cond_statment
+
+    WORD  shift, and go to state 14
+    NOT   shift, and go to state 24
+    '('   shift, and go to state 25
+
+    cond_statment  go to state 34
+    cmp_statment   go to state 27
+    column         go to state 28
+
+
+state 25
+
+   15 cond_statment: '(' . cond_statment ')'
+
+    WORD  shift, and go to state 14
+    NOT   shift, and go to state 24
+    '('   shift, and go to state 25
+
+    cond_statment  go to state 35
+    cmp_statment   go to state 27
+    column         go to state 28
+
+
+state 26
+
+   10 query_statment: select_statment WHERE cond_statment .
+   12 cond_statment: cond_statment . AND cmp_statment
+   13              | cond_statment . OR cmp_statment
+
+    AND  shift, and go to state 36
+    OR   shift, and go to state 37
+
+    $default  reduce using rule 10 (query_statment)
+
+
+state 27
+
+   16 cond_statment: cmp_statment .
+
+    $default  reduce using rule 16 (cond_statment)
+
+
+state 28
+
+   17 cmp_statment: column . op column
+
+    EQ  shift, and go to state 38
+    NE  shift, and go to state 39
+    LT  shift, and go to state 40
+    LE  shift, and go to state 41
+    GT  shift, and go to state 42
+    GE  shift, and go to state 43
+
+    op  go to state 44
+
+
+state 29
+
+    7 insert_statment: INSERT INTO table VALUES . '(' insert_values ')'
+
+    '('  shift, and go to state 45
+
+
+state 30
+
+   28 column: WORD '.' WORD .
+
+    $default  reduce using rule 28 (column)
+
+
+state 31
+
+   11 select_statment: SELECT column_list FROM table_list .
+   24 table_list: table_list . ',' table
+
+    ','  shift, and go to state 46
+
+    $default  reduce using rule 11 (select_statment)
+
+
+state 32
+
+   25 table_list: table .
+
+    $default  reduce using rule 25 (table_list)
+
+
+state 33
+
+   19 column_list: column_list ',' column .
+
+    $default  reduce using rule 19 (column_list)
+
+
+state 34
+
+   12 cond_statment: cond_statment . AND cmp_statment
+   13              | cond_statment . OR cmp_statment
+   14              | NOT cond_statment .
+
+    AND  shift, and go to state 36
+    OR   shift, and go to state 37
+
+    AND       [reduce using rule 14 (cond_statment)]
+    OR        [reduce using rule 14 (cond_statment)]
+    $default  reduce using rule 14 (cond_statment)
+
+
+state 35
+
+   12 cond_statment: cond_statment . AND cmp_statment
+   13              | cond_statment . OR cmp_statment
+   15              | '(' cond_statment . ')'
+
+    AND  shift, and go to state 36
+    OR   shift, and go to state 37
+    ')'  shift, and go to state 47
+
+
+state 36
+
+   12 cond_statment: cond_statment AND . cmp_statment
+
+    WORD  shift, and go to state 14
+
+    cmp_statment  go to state 48
+    column        go to state 28
+
+
+state 37
+
+   13 cond_statment: cond_statment OR . cmp_statment
+
+    WORD  shift, and go to state 14
+
+    cmp_statment  go to state 49
+    column        go to state 28
+
+
+state 38
+
+   29 op: EQ .
+
+    $default  reduce using rule 29 (op)
+
+
+state 39
+
+   34 op: NE .
+
+    $default  reduce using rule 34 (op)
+
+
+state 40
+
+   30 op: LT .
+
+    $default  reduce using rule 30 (op)
+
+
+state 41
+
+   32 op: LE .
+
+    $default  reduce using rule 32 (op)
+
+
+state 42
+
+   31 op: GT .
+
+    $default  reduce using rule 31 (op)
+
+
+state 43
+
+   33 op: GE .
+
+    $default  reduce using rule 33 (op)
+
+
+state 44
+
+   17 cmp_statment: column op . column
+
+    WORD  shift, and go to state 14
+
+    column  go to state 50
+
+
+state 45
+
+    7 insert_statment: INSERT INTO table VALUES '(' . insert_values ')'
+
+    LITERAL  shift, and go to state 51
+    INT      shift, and go to state 52
+    FLOAT    shift, and go to state 53
+
+    insert_values  go to state 54
+    sql_value      go to state 55
+
+
+state 46
+
+   24 table_list: table_list ',' . table
+
+    WORD  shift, and go to state 11
+
+    table  go to state 56
+
+
+state 47
+
+   15 cond_statment: '(' cond_statment ')' .
+
+    $default  reduce using rule 15 (cond_statment)
+
+
+state 48
+
+   12 cond_statment: cond_statment AND cmp_statment .
+
+    $default  reduce using rule 12 (cond_statment)
+
+
+state 49
+
+   13 cond_statment: cond_statment OR cmp_statment .
+
+    $default  reduce using rule 13 (cond_statment)
+
+
+state 50
+
+   17 cmp_statment: column op column .
+
+    $default  reduce using rule 17 (cmp_statment)
+
+
+state 51
+
+   23 sql_value: LITERAL .
+
+    $default  reduce using rule 23 (sql_value)
+
+
+state 52
+
+   21 sql_value: INT .
+
+    $default  reduce using rule 21 (sql_value)
+
+
+state 53
+
+   22 sql_value: FLOAT .
+
+    $default  reduce using rule 22 (sql_value)
+
+
+state 54
+
+    7 insert_statment: INSERT INTO table VALUES '(' insert_values . ')'
+    8 insert_values: insert_values . ',' sql_value
+
+    ')'  shift, and go to state 57
+    ','  shift, and go to state 58
+
+
+state 55
+
+    9 insert_values: sql_value .
+
+    $default  reduce using rule 9 (insert_values)
+
+
+state 56
+
+   24 table_list: table_list ',' table .
+
+    $default  reduce using rule 24 (table_list)
+
+
+state 57
+
+    7 insert_statment: INSERT INTO table VALUES '(' insert_values ')' .
+
+    $default  reduce using rule 7 (insert_statment)
+
+
+state 58
+
+    8 insert_values: insert_values ',' . sql_value
+
+    LITERAL  shift, and go to state 51
+    INT      shift, and go to state 52
+    FLOAT    shift, and go to state 53
+
+    sql_value  go to state 59
+
+
+state 59
+
+    8 insert_values: insert_values ',' sql_value .
+
+    $default  reduce using rule 8 (insert_values)

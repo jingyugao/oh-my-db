@@ -14,7 +14,7 @@ FLAG=-g -o2 -std=c++14
 
 oh-my-db:main.o db.o
 	$(CXX) $(FLAG) $^ -o $@
-btree_test:mBtree_test.cpp mBTree.h
+btree_test:b_tree_test.cpp b_tree.h
 	$(CXX) $(FLAG) $< -o $@ 
 parser_test:parser_test.cpp json_parser.h
 	$(CXX) $(FLAG) $< -o $@ 
