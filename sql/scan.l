@@ -1,25 +1,25 @@
 %{
 #include<string.h>
+#include<stdio.h>
 //#include"sql.h"
 #include"y.tab.h"
 
 #define MAX_LEN 255
-
+FILE * ferr;
 int yyerror(char*);
-
+char *make_string(const char*src,int len);
 typedef struct{
     const char*token_str;
     int token_type;
-}token_struct;
+}TokenItem;
 
-token_struct token_map[]={
+TokenItem token_map[]={
     {"create",CREATE},
     {"drop",DROP},
     {"table",TABLE},
     {"index",INDEX},
     {"and",AND},
     {"values",VALUES},
-    
     {"select",SELECT},
     {"from",FROM},
     {"where",WHERE},
@@ -29,11 +29,15 @@ token_struct token_map[]={
 
 }; 
 
+char *get_literal(const char *src,int len){
+    char *dst=make_string(src+1,len-2);
+    dst[len-1]='\0';
+    return dst;
+}
 char *make_string(const char*src,int len){
-    char *ret=(char*)malloc(len);
-    //ret[0] is " 
-    memcpy(ret,src+1,len-2);
-    ret[len-1]='\0';
+    char *ret=(char*)malloc(len+1);
+
+    memcpy(ret,src,len+1);
     return ret;
 }
 
@@ -41,17 +45,19 @@ int get_id(char* s){
  
     static char str[MAX_LEN];
     int len;
+
     if((len = lower(str, s, MAX_LEN)) == MAX_LEN)
     {
         fprintf(stderr,"TOKEN length is over than MAX_LEN:%d",MAX_LEN);
         return NONE;
     }
     
-    yylval.sval=s;
-    for(int i=0;i<sizeof(token_map)/sizeof(token_struct);i++){
+    yylval.sval=make_string(s,len);
+    for(int i=0;i<sizeof(token_map)/sizeof(TokenItem);i++){
         if (strcmp(str,token_map[i].token_str)==0)
             return yylval.ival=token_map[i].token_type;
     }
+
     return WORD;
 }
 
@@ -83,11 +89,11 @@ s_num       [+\-]?{num}
 <COMMENT>[^*]   {/*ingore the '*' */}
 <COMMENT>"*/"   {BEGIN(INITIAL);}
 [ \n\t]         {/* ignore whilespace */}
-{s_num}         {yylval.ival=atoi(yytext);return INT;}
+{s_num}         {yylval.ival=atoi(yytext);fprintf(ferr,"INT:%d",yylval.ival);  return INT;}
 {s_num}\.{num}  {yylval.fval=atof(yytext);return FLOAT;}
-\"(\\.|[^\\"])*\" {yylval.sval=make_string(yytext,yyleng);return LITERAL;}
+\"(\\.|[^\\"])*\" {yylval.sval=get_literal(yytext,yyleng);fprintf(ferr,"LITERAL:%s",yylval.sval);  return LITERAL;}
 \"(\\.|[^\\"])*\n   {printf("newline in literal string is illegal!\n");}
-{letter}({letter}|{digit}|_)*    { return  get_id(yylval.sval=yytext) ;}
+{letter}+    { int id=get_id(yytext);fprintf(ferr,"id:%d,val:%s\n",id,yytext);   return id;}
 "<"         {return LT;}
 "<="        {return LE;}
 ">"         {return GT;}
@@ -97,6 +103,17 @@ s_num       [+\-]?{num}
 
 %%
 main(int argc,char **argv){
+    // ferr=fopen("err.log","w");
+    // if(ferr==NULL){
+    //     printf("cant open err.log\n");
+    //     return 0;
+    // }
+    ferr=stdout;
+    setbuf(ferr,NULL);
+
+    fprintf(ferr,"begin log\n");
+    char buf[]="select A FROM B WHERE";
+    yy_scan_string(buf);
     return yyparse();
 }
 

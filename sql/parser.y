@@ -1,16 +1,10 @@
 
 %{
 
-struct sql_val{
-    int v_type;
-    void * val;
-};
+#include"sql_node.h"
+static SqlNode *parse_tree;
 
-struct sql_node{
-    int sql_type;//create 1,select2,insert 3,
-};
-
-
+extern FILE * ferr;
 %}
 
 %union{
@@ -18,11 +12,16 @@ int ival;
 float fval;
 char *sval;
 int subtok;
+struct SqlNode* n;
 }
 
-%token WORD CHAR
-%token LITERAL  
-%token INT FLOAT 
+
+
+
+%token <sval>   WORD 
+%token <sval>   LITERAL  
+%token <ival>   INT 
+%token <fval>   FLOAT 
 
 %token 
     NONE
@@ -48,22 +47,47 @@ int subtok;
     GE
 
 
-
 %token SELECT FROM WHERE
+
+
+
+%type <n>   sql 
+            ddl 
+            dml
+            create_statmen
+            insert_statment
+            insert_values
+            query_statment
+            select_statment
+            cond_statment
+            cmp_statment
+            column_list
+            sql_value
+            table_list
+            table
+            column
+            
+
+
 
 %%
 
 
-sql:                    ddl
-                    |   dml
+start:                  sql   
+                    |   select_statment  {fprintf(ferr,"start\n");  parse_tree=$1;   print_node(ferr,$1); }         
                     ;
+
+sql:                    ddl
+                    |   dml {fprintf(ferr,"sql\n");   $$=$1;}
+                    ;
+
 
 
 ddl:                    create_statmen
                     ;
 
 dml:                    insert_statment
-                    |   query_statment
+                    |   query_statment      { fprintf(ferr,"dml\n");  $$=$1;}
                     ;
 
 create_statmen:         CREATE table
@@ -79,10 +103,10 @@ insert_values:
                     ;
 
 query_statment:
-                        select_statment WHERE cond_statment
+                        // select_statment {fprintf(ferr,"query_statment\n");  $$=$1;}
                     ;
 select_statment:
-                        SELECT column_list FROM table_list
+                        SELECT column_list FROM table_list WHERE {fprintf(ferr,"sel_statment\n");   $$=select_node($2,$4);}
                         ;
 cond_statment:
                         cond_statment AND cmp_statment
@@ -97,9 +121,8 @@ cmp_statment:
                     ;   
 
 column_list:
-                        column
-                    |   column_list ',' column
-                    |   '*'
+                    |   column ',' column_list   {$$=list_node($3,$1);}
+                    |   column              {fprintf(ferr,"col_list\n"); $$=list_node($1,NULL);}
                     ;
 
 sql_value:
@@ -108,15 +131,18 @@ sql_value:
                     |   LITERAL
                     ;
 
-table_list:             table_list ',' table
-                    |   table
+table_list:             table ',' table_list   {$$=list_node($3,$1);}
+                    |   table              {fprintf(ferr,"table_list\n");    $$=list_node($1,NULL);}
                     ;
 
-column:
-                        table '.' WORD
+column:                 table '.' WORD     {fprintf(ferr,"rel.col:%s.%s\n",$1,$3);$$=col_node($1,$3);}
+                    |   WORD               {fprintf(ferr,"column:%s\n",$1);$$=col_node($1,"null");} 
                     ;   
 
-table:                  WORD
+table:                  WORD        {
+                                        fprintf(ferr,"table:%c%cxx,\n",*($1),*($1+1));
+                                        $$=rel_node($1);
+                                        }          
                     ;
 
 
@@ -129,7 +155,5 @@ op:
                     |   NE
                     ;
         
-
-
 %%
 

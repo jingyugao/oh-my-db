@@ -40,81 +40,80 @@
       know about them.  */
    enum yytokentype {
      WORD = 258,
-     CHAR = 259,
-     LITERAL = 260,
-     INT = 261,
-     FLOAT = 262,
-     NONE = 263,
-     CREATE = 264,
-     DROP = 265,
-     TABLE = 266,
-     INDEX = 267,
-     HELP = 268,
-     VALUES = 269,
-     INSERT = 270,
-     DELET = 271,
-     UPDATE = 272,
-     INTO = 273,
-     AND = 274,
-     XOR = 275,
-     OR = 276,
-     NOT = 277,
-     EQ = 278,
-     NE = 279,
-     LT = 280,
-     LE = 281,
-     GT = 282,
-     GE = 283,
-     SELECT = 284,
-     FROM = 285,
-     WHERE = 286
+     LITERAL = 259,
+     INT = 260,
+     FLOAT = 261,
+     NONE = 262,
+     CREATE = 263,
+     DROP = 264,
+     TABLE = 265,
+     INDEX = 266,
+     HELP = 267,
+     VALUES = 268,
+     INSERT = 269,
+     DELET = 270,
+     UPDATE = 271,
+     INTO = 272,
+     AND = 273,
+     XOR = 274,
+     OR = 275,
+     NOT = 276,
+     EQ = 277,
+     NE = 278,
+     LT = 279,
+     LE = 280,
+     GT = 281,
+     GE = 282,
+     SELECT = 283,
+     FROM = 284,
+     WHERE = 285
    };
 #endif
 /* Tokens.  */
 #define WORD 258
-#define CHAR 259
-#define LITERAL 260
-#define INT 261
-#define FLOAT 262
-#define NONE 263
-#define CREATE 264
-#define DROP 265
-#define TABLE 266
-#define INDEX 267
-#define HELP 268
-#define VALUES 269
-#define INSERT 270
-#define DELET 271
-#define UPDATE 272
-#define INTO 273
-#define AND 274
-#define XOR 275
-#define OR 276
-#define NOT 277
-#define EQ 278
-#define NE 279
-#define LT 280
-#define LE 281
-#define GT 282
-#define GE 283
-#define SELECT 284
-#define FROM 285
-#define WHERE 286
+#define LITERAL 259
+#define INT 260
+#define FLOAT 261
+#define NONE 262
+#define CREATE 263
+#define DROP 264
+#define TABLE 265
+#define INDEX 266
+#define HELP 267
+#define VALUES 268
+#define INSERT 269
+#define DELET 270
+#define UPDATE 271
+#define INTO 272
+#define AND 273
+#define XOR 274
+#define OR 275
+#define NOT 276
+#define EQ 277
+#define NE 278
+#define LT 279
+#define LE 280
+#define GT 281
+#define GE 282
+#define SELECT 283
+#define FROM 284
+#define WHERE 285
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 16 "parser.y"
+#line 10 "parser.y"
 {
 int ival;
 float fval;
 char *sval;
 int subtok;
+struct SqlNode* n;
 }
 /* Line 1529 of yacc.c.  */
-#line 118 "y.tab.h"
+#line 117 "y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

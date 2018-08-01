@@ -388,7 +388,7 @@ static yyconst flex_int32_t yy_ec[256] =
        12,   13,    1,    1,   14,   14,   14,   14,   14,   14,
        14,   14,   14,   14,   14,   14,   14,   14,   14,   14,
        14,   14,   14,   14,   14,   14,   14,   14,   14,   14,
-        1,   15,    1,    1,   16,    1,   14,   14,   14,   14,
+        1,   15,    1,    1,    1,    1,   14,   14,   14,   14,
 
        14,   14,   14,   14,   14,   14,   14,   14,   14,   14,
        14,   14,   14,   14,   14,   14,   14,   14,   14,   14,
@@ -409,50 +409,46 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int32_t yy_meta[17] =
+static yyconst flex_int32_t yy_meta[16] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1
+        1,    1,    1,    1,    1
     } ;
 
 static yyconst flex_int16_t yy_base[35] =
     {   0,
-        0,    0,   36,   35,   40,   63,   63,   26,   14,   25,
-       27,   10,   20,   63,   19,   20,   63,   19,   63,   34,
-       47,   63,   24,   13,   63,   16,   63,   63,    0,   63,
-       15,   63,   23,   21
+        0,    0,   34,   33,   38,   42,   42,   25,   13,   26,
+       29,    9,   22,   42,   21,   18,   42,   21,   42,   26,
+        0,   42,   24,   12,   42,   16,   42,   42,   11,   42,
+       14,   42,   22,   20
     } ;
 
 static yyconst flex_int16_t yy_def[35] =
     {   0,
        32,    1,   33,   33,   32,   32,   32,   32,   34,   32,
        32,   32,   32,   32,   32,   32,   32,   32,   32,   34,
-       34,   32,   34,   32,   32,   32,   32,   32,   16,   32,
+       20,   32,   34,   32,   32,   32,   32,   32,   32,   32,
        32,    0,   32,   32
     } ;
 
-static yyconst flex_int16_t yy_nxt[80] =
+static yyconst flex_int16_t yy_nxt[58] =
     {   0,
         6,    7,    7,    8,    9,    6,   10,    6,   11,   12,
-       13,   14,   15,   16,    6,    6,   21,   26,   22,   24,
-       26,   20,   24,   17,   31,   31,   32,   30,   23,   29,
-       28,   27,   25,   29,   24,   29,   21,   19,   22,   32,
-       18,   18,   32,   32,   32,   32,   32,   32,   23,   21,
-       32,   22,   32,   32,   32,   32,   32,   32,   32,   32,
-       32,   23,    5,   32,   32,   32,   32,   32,   32,   32,
-       32,   32,   32,   32,   32,   32,   32,   32,   32
+       13,   14,   15,   16,    6,   21,   26,   22,   24,   26,
+       20,   24,   17,   31,   29,   31,   32,   23,   21,   30,
+       22,   29,   28,   27,   25,   24,   19,   32,   18,   18,
+       23,    5,   32,   32,   32,   32,   32,   32,   32,   32,
+       32,   32,   32,   32,   32,   32,   32
     } ;
 
-static yyconst flex_int16_t yy_chk[80] =
+static yyconst flex_int16_t yy_chk[58] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    1,    1,    9,   12,    9,   12,
-       24,   34,   24,   33,   31,   26,   23,   18,    9,   16,
-       15,   13,   11,   16,   10,   16,   20,    8,   20,    5,
-        4,    3,    0,    0,    0,    0,    0,    0,   20,   21,
-        0,   21,    0,    0,    0,    0,    0,    0,    0,    0,
-        0,   21,   32,   32,   32,   32,   32,   32,   32,   32,
-       32,   32,   32,   32,   32,   32,   32,   32,   32
+        1,    1,    1,    1,    1,    9,   12,    9,   12,   24,
+       34,   24,   33,   31,   29,   26,   23,    9,   20,   18,
+       20,   16,   15,   13,   11,   10,    8,    5,    4,    3,
+       20,   32,   32,   32,   32,   32,   32,   32,   32,   32,
+       32,   32,   32,   32,   32,   32,   32
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -472,26 +468,26 @@ char *yytext;
 #line 1 "scan.l"
 #line 2 "scan.l"
 #include<string.h>
+#include<stdio.h>
 //#include"sql.h"
 #include"y.tab.h"
 
 #define MAX_LEN 255
-
+FILE * ferr;
 int yyerror(char*);
-
+char *make_string(const char*src,int len);
 typedef struct{
     const char*token_str;
     int token_type;
-}token_struct;
+}TokenItem;
 
-token_struct token_map[]={
+TokenItem token_map[]={
     {"create",CREATE},
     {"drop",DROP},
     {"table",TABLE},
     {"index",INDEX},
     {"and",AND},
     {"values",VALUES},
-    
     {"select",SELECT},
     {"from",FROM},
     {"where",WHERE},
@@ -501,11 +497,15 @@ token_struct token_map[]={
 
 }; 
 
+char *get_literal(const char *src,int len){
+    char *dst=make_string(src+1,len-2);
+    dst[len-1]='\0';
+    return dst;
+}
 char *make_string(const char*src,int len){
-    char *ret=(char*)malloc(len);
-    //ret[0] is " 
-    memcpy(ret,src+1,len-2);
-    ret[len-1]='\0';
+    char *ret=(char*)malloc(len+1);
+
+    memcpy(ret,src,len+1);
     return ret;
 }
 
@@ -513,17 +513,19 @@ int get_id(char* s){
  
     static char str[MAX_LEN];
     int len;
+
     if((len = lower(str, s, MAX_LEN)) == MAX_LEN)
     {
         fprintf(stderr,"TOKEN length is over than MAX_LEN:%d",MAX_LEN);
         return NONE;
     }
     
-    yylval.sval=s;
-    for(int i=0;i<sizeof(token_map)/sizeof(token_struct);i++){
+    yylval.sval=make_string(s,len);
+    for(int i=0;i<sizeof(token_map)/sizeof(TokenItem);i++){
         if (strcmp(str,token_map[i].token_str)==0)
             return yylval.ival=token_map[i].token_type;
     }
+
     return WORD;
 }
 
@@ -543,7 +545,7 @@ int lower(char *dst, char *src, int max)
 
 
 
-#line 547 "lex.yy.c"
+#line 549 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -726,9 +728,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 81 "scan.l"
+#line 87 "scan.l"
 
-#line 732 "lex.yy.c"
+#line 734 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -787,7 +789,7 @@ yy_match:
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 63 );
+		while ( yy_base[yy_current_state] != 42 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -813,89 +815,89 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 82 "scan.l"
+#line 88 "scan.l"
 {BEGIN(COMMENT);}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 83 "scan.l"
+#line 89 "scan.l"
 {/*ingore the '*' */}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 84 "scan.l"
+#line 90 "scan.l"
 {BEGIN(INITIAL);}
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 85 "scan.l"
+#line 91 "scan.l"
 {/* ignore whilespace */}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 86 "scan.l"
-{yylval.ival=atoi(yytext);return INT;}
+#line 92 "scan.l"
+{yylval.ival=atoi(yytext);fprintf(ferr,"INT:%d",yylval.ival);  return INT;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 87 "scan.l"
+#line 93 "scan.l"
 {yylval.fval=atof(yytext);return FLOAT;}
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 88 "scan.l"
-{yylval.sval=make_string(yytext,yyleng);return LITERAL;}
+#line 94 "scan.l"
+{yylval.sval=get_literal(yytext,yyleng);fprintf(ferr,"LITERAL:%s",yylval.sval);  return LITERAL;}
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 89 "scan.l"
+#line 95 "scan.l"
 {printf("newline in literal string is illegal!\n");}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 90 "scan.l"
-{ return  get_id(yylval.sval=yytext) ;}
+#line 96 "scan.l"
+{ int id=get_id(yytext);fprintf(ferr,"id:%d,val:%s\n",id,yytext);   return id;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 91 "scan.l"
+#line 97 "scan.l"
 {return LT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 92 "scan.l"
+#line 98 "scan.l"
 {return LE;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 93 "scan.l"
+#line 99 "scan.l"
 {return GT;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 94 "scan.l"
+#line 100 "scan.l"
 {return GE;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 95 "scan.l"
+#line 101 "scan.l"
 {return EQ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 96 "scan.l"
+#line 102 "scan.l"
 {return NE;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 98 "scan.l"
+#line 104 "scan.l"
 ECHO;
 	YY_BREAK
-#line 899 "lex.yy.c"
+#line 901 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -1893,10 +1895,21 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 98 "scan.l"
+#line 104 "scan.l"
 
 
 main(int argc,char **argv){
+    // ferr=fopen("err.log","w");
+    // if(ferr==NULL){
+    //     printf("cant open err.log\n");
+    //     return 0;
+    // }
+    ferr=stdout;
+    setbuf(ferr,NULL);
+
+    fprintf(ferr,"begin log\n");
+    char buf[]="select A FROM B WHERE";
+    yy_scan_string(buf);
     return yyparse();
 }
 

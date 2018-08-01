@@ -1,6 +1,7 @@
 #!/bin/bash
 
 lex scan.l
+rm y.tab.c 
 yacc -dy parser.y
 
-gcc  -w lex.yy.c y.tab.c -ll -ly
+gcc -g -O1 -w lex.yy.c  y.tab.c -ll -ly
