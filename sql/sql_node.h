@@ -65,7 +65,7 @@ SqlNode *create_node(char *rel_name, SqlNode *col_list)
     return node;
 }
 
-SqlKind *select_node(SqlNode *col_list, SqlNode *rel_list)
+SqlKind *select_node(SqlNode *col_list, SqlNode *rel_list,SqlNode* cond_list)
 {
     SqlNode *node = base_node(SQL_SELECT);
     node->u.select_node.col_list = col_list;

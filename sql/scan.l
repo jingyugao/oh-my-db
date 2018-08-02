@@ -112,7 +112,7 @@ main(int argc,char **argv){
     setbuf(ferr,NULL);
 
     fprintf(ferr,"begin log\n");
-    char buf[]="select A FROM B WHERE";
+    char buf[]="select A FROM B ";
     yy_scan_string(buf);
     return yyparse();
 }

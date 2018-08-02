@@ -102,11 +102,11 @@ insert_values:
                     |   sql_value
                     ;
 
-query_statment:
-                        // select_statment {fprintf(ferr,"query_statment\n");  $$=$1;}
+query_statment:          sel_statment cond_statment 
+                    |    select_statment        {fprintf(ferr,"query_statment\n");  $$=$1;}
                     ;
 select_statment:
-                        SELECT column_list FROM table_list WHERE {fprintf(ferr,"sel_statment\n");   $$=select_node($2,$4);}
+                        SELECT column_list FROM table_list {fprintf(ferr,"sel_statment\n");   $$=select_node($2,$4);}
                         ;
 cond_statment:
                         cond_statment AND cmp_statment
