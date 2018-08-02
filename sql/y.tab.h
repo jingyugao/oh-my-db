@@ -55,18 +55,17 @@
      UPDATE = 271,
      INTO = 272,
      AND = 273,
-     XOR = 274,
-     OR = 275,
-     NOT = 276,
-     EQ = 277,
-     NE = 278,
-     LT = 279,
-     LE = 280,
-     GT = 281,
-     GE = 282,
-     SELECT = 283,
-     FROM = 284,
-     WHERE = 285
+     OR = 274,
+     NOT = 275,
+     EQ = 276,
+     NE = 277,
+     LT = 278,
+     LE = 279,
+     GT = 280,
+     GE = 281,
+     SELECT = 282,
+     FROM = 283,
+     WHERE = 284
    };
 #endif
 /* Tokens.  */
@@ -86,34 +85,33 @@
 #define UPDATE 271
 #define INTO 272
 #define AND 273
-#define XOR 274
-#define OR 275
-#define NOT 276
-#define EQ 277
-#define NE 278
-#define LT 279
-#define LE 280
-#define GT 281
-#define GE 282
-#define SELECT 283
-#define FROM 284
-#define WHERE 285
+#define OR 274
+#define NOT 275
+#define EQ 276
+#define NE 277
+#define LT 278
+#define LE 279
+#define GT 280
+#define GE 281
+#define SELECT 282
+#define FROM 283
+#define WHERE 284
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 10 "parser.y"
+#line 14 "parser.ypp"
 {
 int ival;
 float fval;
 char *sval;
-int subtok;
+SqlOp opval;
 struct SqlNode* n;
 }
 /* Line 1529 of yacc.c.  */
-#line 117 "y.tab.h"
+#line 115 "y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

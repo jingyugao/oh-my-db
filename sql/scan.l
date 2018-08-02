@@ -1,13 +1,15 @@
 %{
 #include<string.h>
 #include<stdio.h>
-//#include"sql.h"
+#include"sql_node.h"
 #include"y.tab.h"
 
 #define MAX_LEN 255
 FILE * ferr;
-int yyerror(char*);
 char *make_string(const char*src,int len);
+char *get_literal(const char *src,int len);
+int get_id(char* s);
+int lower(char *dst, char *src, int max);
 typedef struct{
     const char*token_str;
     int token_type;
@@ -102,7 +104,9 @@ s_num       [+\-]?{num}
 "!="        {return NE;}
 
 %%
-main(int argc,char **argv){
+
+
+int main(int argc,char **argv){
     // ferr=fopen("err.log","w");
     // if(ferr==NULL){
     //     printf("cant open err.log\n");
@@ -112,9 +116,10 @@ main(int argc,char **argv){
     setbuf(ferr,NULL);
 
     fprintf(ferr,"begin log\n");
-    char buf[]="select A FROM B ";
+    char buf[]="select A FROM B WHERE c = d";
     yy_scan_string(buf);
-    return yyparse();
+    yyparse();
+    return 0;
 }
 
 
