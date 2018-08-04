@@ -1,17 +1,26 @@
 #include <cassert>
 #include <cstdio>
+#include <list>
+#include<utility>
+#include<string>
 #include <stdlib.h>
-extern "C"//为了能够在C++程序里面调用C函数，必须把每一个需要使用的C函数，其声明都包括在extern "C"{}块里面，这样C++链接时才能成功链接它们。extern "C"用来在C++环境下设置C链接类型。
-{	//lex.l中也有类似的这段extern "C"，可以把它们合并成一段，放到共同的头文件main.h中
-	void yyerror(const char *s);
-	int yylex(void);//该函数是在lex.yy.c里定义的，yyparse()里要调用该函数，为了能编译和链接，必须用extern加以声明
-    int yyparse(void);
+extern "C" {
+
+void yyerror(const char *s);
+int yylex(
+    void); //该函数是在lex.yy.c里定义的，yyparse()里要调用该函数，为了能编译和链接，必须用extern加以声明
+int yyparse(void);
 }
+enum SqlValType {
+    SQL_NULL,
+    SQL_INT,
+    SQL_FLOAT,
+    SQL_CHAR,
+    SQL_LITERAL,
+    SQL_ARRAY
+};
 
-
-typedef enum { SQL_INT, SQL_FLOAT, SQL_LITERAL } SqlValType;
-
-typedef struct {
+struct {
     char *rel_name;
     char *col_name;
     SqlValType v_type;
@@ -19,21 +28,19 @@ typedef struct {
     void *data;
 } ColItem;
 
-typedef struct {
-
-} ValItem;
-
-typedef enum {
+ 
+enum SqlKind {
     SQL_CREATE,
     SQL_SELECT,
     SQL_RELATION,
     SQL_COLUMN,
     SQL_LIST,
     SQL_VALUE,
+    SQL_CONST,
     SQL_COND
-} SqlKind;
+};
 
- enum SqlOp{
+enum SqlOp {
     SQL_EQ,
     SQL_GT,
     SQL_LT,
@@ -43,35 +50,78 @@ typedef enum {
     SQL_AND,
     SQL_OR,
     SQL_NOT
-} ;
-
-
-struct BaseNode{
-
 };
 
-struct Relation{
+// struct BaseNode {
+//     SqlKind kind;
+// };
+
+// struct RelationNode:public BaseNode {
+//     char *name;
+// };
+
+// struct ConstNode :public BaseNode{
+//     SqlValType value_type;
+//     int len;
+//     void *data;
+// };
+
+// struct ColumnDef{
+//     char *col_name;
+//     SqlValType value_type;
+//     char *rel_name;
+//     //int len;
+// };
+
+// typedef std::pair<char*,char*> RelCol;
+
+// template<SqlKind k>
+// struct StatmentNode:public BaseNode{
+// };
+
+// template<>
+// struct StatmentNode<SQL_CREATE>{
+//     char *rel_name;
+//     std::list<ColumnDef *> col_list;
+// };
+
+// template<>
+// struct StatmentNode<SQL_SELECT>{
+//     std::list<char *> from_clause;
+//     std::list<RelCol> select_target;
+//     BaseNode *where_clause;
+// };
+// template<>
+// struct StatmentNode<SQL_COND>{
+//     std::list<BaseNode*> items;     //op or const or column
+// };
+
+// struct CreateNode : public BaseNode {
+//     char *rel_name;
+//     std::list<ColumnDef *> col_list;
+// };
+
+// struct SelectNode : public BaseNode {
+//     std::list<char *> from_clause;
+//     std::list<RelCol> select_target;
+//     BaseNode *where_clause;
+// };
+
+// struct CondNode:public BaseNode{
+//     std::list<BaseNode*> items;     //op or const or column
+// };
+
+
+
+//  constexpr   BaseNode * createNode(const SqlKind kind){
+//         BaseNode *node;
+//         return node;
     
-};
 
-struct CreateNode:public BaseNode{
-
-};
-struct SelectNode:public BaseNode{
-
-};
-struct CondNode:public BaseNode{
-
-};
-struct ListNode:public BaseNode{
-
-};
-struct ColNode:public BaseNode{
-
-};
+     
 
 
-typedef struct SqlNode {
+struct SqlNode {
     SqlKind node_kind;
     union {
         struct {
@@ -113,7 +163,7 @@ typedef struct SqlNode {
             struct SqlNode *left_list;
         } list_node;
     } u;
-} SqlNode;
+};
 
 #define GET_CUR(list, cur)                                                     \
     do {                                                                       \
@@ -130,9 +180,9 @@ typedef struct SqlNode {
 SqlNode *base_node(SqlKind sql_kind);
 SqlNode *create_node(char *rel_name, SqlNode *col_list);
 SqlNode *select_node(SqlNode *col_list, SqlNode *rel_list, SqlNode *cond_list);
-SqlNode *value_node(void * x, SqlValType t);
-SqlNode *cond_node( SqlNode * const x, SqlOp op, SqlNode *const y);
-SqlNode *list_node( SqlNode *const cur, SqlNode *const list);
-SqlNode *col_node( char *col_name,  char *const rel_name);
-SqlNode *rel_node(char * const rel_name);
+SqlNode *value_node(void *x, SqlValType t);
+SqlNode *cond_node(SqlNode *const x, SqlOp op, SqlNode *const y);
+SqlNode *list_node(SqlNode *const cur, SqlNode *const list);
+SqlNode *col_node(char *col_name, char *const rel_name);
+SqlNode *rel_node(char *const rel_name);
 void print_node(FILE *f, SqlNode *root);
