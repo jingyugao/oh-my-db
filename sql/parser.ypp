@@ -6,7 +6,7 @@
 
 SqlNode *parse_tree;
 
-extern FILE * ferr;
+extern FILE * stderr;
 
 %}
 
@@ -32,12 +32,16 @@ struct SqlNode* n;
     NONE
     CREATE
     DROP
+    DATABASE
     TABLE
     INDEX
     HELP
     VALUES
     INSERT
-    DELET
+    DELETE
+    T_INT
+    T_FLOAT
+    T_VARCHAR
     UPDATE
     INTO
     AND
@@ -50,6 +54,9 @@ struct SqlNode* n;
     GT
     GE
 
+%left AND OR 
+%nonassoc NOT 
+
 
 %token SELECT FROM WHERE
 
@@ -58,17 +65,24 @@ struct SqlNode* n;
 %type <n>   sql 
             ddl 
             dml
-            create_statment
+            create_relation
+            drop_relation
+            create_db
+            drop_db
             insert_statment
             insert_values
             select_statment
             cond_list
+            update_statment
+            delete_statment
+            attr
+            attr_list
             cmp_statment
             cmp_val
             column_list
             sql_value
-            table_list
-            table
+            rel_list
+            relation
             column
             
 
@@ -77,49 +91,72 @@ struct SqlNode* n;
 %%
 
 
-start:                  sql   
-                    |   select_statment  {fprintf(ferr,"start\n");  parse_tree=$1;   print_node(ferr,$1); }         
+start:                  sql   {fprintf(stderr,"start\n");  parse_tree=$1;   print_node(stderr,$1); } 
+                    |          
                     ;
 
 sql:                    ddl
-                    |   dml {fprintf(ferr,"sql\n");   $$=$1;}
+                    |   dml {fprintf(stderr,"sql\n");   $$=$1;}
                     ;
 
 
 
-ddl:                    create_statment
+ddl:                    create_relation   
+                    |   drop_relation
+                    |   create_db
+                    |   drop_db
                     ;
 
 dml:                    insert_statment
+                    |   select_statment
+                    |   update_statment
+                    |   delete_statment
                     ;
 
-create_statment:         CREATE table
+create_relation:         CREATE TABLE relation  '(' attr_list ')'   {fprintf(stderr,"create\n");$$=create_node($3,$5);   }      
+                    ;
+
+drop_relation:          DROP TABLE  relation        { fprintf(stderr,"drop\n");$$=drop_node($3);}
+                    ;
+
+create_db:              CREATE DATABASE WORD        { fprintf(stderr,"create db\n"); $$=db_node($3,DB_CREATE);}
+                    ;
+
+drop_db:              DROP DATABASE WORD  { fprintf(stderr,"drop db\n"); $$=db_node($3,DB_DROP);}
                     ;
 
 insert_statment:   
-                        INSERT INTO table VALUES '(' insert_values ')'
+                        INSERT INTO relation VALUES '(' insert_values ')'   {fprintf(stderr,"insert\n");$$=insert_node($3,$6,NULL);}
+                    |   INSERT INTO relation '(' column_list ')' VALUES '(' insert_values ')'  {fprintf(stderr,"insert\n");$$=insert_node($3,$9,$5);}
                     ;
-
 insert_values:   
-                        insert_values ','  sql_value
-                    |   sql_value
+                        sql_value ',' insert_values    {fprintf(stderr,"insert_values\n");$$=list_node($1,$3);}
+                    |   sql_value                      {fprintf(stderr,"insert_values\n");$$=list_node($1,NULL);}
                     ;
 
 
 select_statment:
-                        SELECT column_list FROM table_list WHERE cond_list {fprintf(ferr,"sel_statment1\n");   $$=select_node($2,$4,$6);}
-                    |   SELECT column_list FROM table_list                      {fprintf(ferr,"sel_statment2\n");   $$=select_node($2,$4,NULL);}
+                        SELECT column_list  FROM rel_list WHERE cond_list       {fprintf(stderr,"sel_statment1\n");   $$=select_node($2,$4,$6);}
+                    |   SELECT column_list  FROM rel_list                       {fprintf(stderr,"sel_statment2\n");   $$=select_node($2,$4,NULL);}
                         ;
+
+
+update_statment:        UPDATE  {$$=NULL;}
+                    ;
+
+delete_statment:        DELETE  {$$=NULL;}
+                    ;
+
 cond_list:
-                        cond_list AND cmp_statment  {$$=cond_node($1,SQL_AND,$3);}
-                    |   cond_list OR cmp_statment
-                    |   NOT cond_list
-                    |   '(' cond_list ')'
+                        cond_list AND cond_list  {$$=cond_node($1,SQL_AND,$3);}
+                    |   cond_list OR cond_list   {$$=cond_node($1,SQL_OR,$3);}
+                    |   NOT cond_list               {$$=cond_node($2,SQL_NOT,NULL);}
+                    |   '(' cond_list ')'           {$$=$2;}
                     |   cmp_statment          
                     ;
             
 cmp_statment:
-                        cmp_val op cmp_val      {fprintf(ferr,"cmp_statment\n");  $$=cond_node($1,$2,$3);}
+                        cmp_val op cmp_val      {fprintf(stderr,"cmp_statment\n");  $$=cond_node($1,$2,$3);}
                     ;   
 
 cmp_val:            
@@ -128,26 +165,39 @@ cmp_val:
                     ;
 
 column_list:
-                        column ',' column_list   {$$=list_node($3,$1);}
-                    |   column              {fprintf(ferr,"col_list\n"); $$=list_node($1,NULL);}
+                        column ',' column_list   {fprintf(stderr,"col_list 2\n");$$=list_node($1,$3);}
+                    |   column              {fprintf(stderr,"col_list\n"); $$=list_node($1,NULL);}
                     ;
+
+
+attr_list:              attr ',' attr_list   {fprintf(stderr,"attr_list\n");$$=list_node($1,$3);}
+                    |   attr               {fprintf(stderr,"attr_list 2\n");$$=list_node($1,NULL);}
+                    ;
+
+attr:                   WORD  T_INT                  {fprintf(stderr,"attr\n");$$=attr_node($1,SQL_INT);}
+                    |   WORD  T_FLOAT                {fprintf(stderr,"attr\n");$$=attr_node($1,SQL_FLOAT);}
+                    |   WORD  T_VARCHAR '(' INT ')'  {fprintf(stderr,"attr\n");$$=attr_node($1,SQL_VARCHAR,$4);}
+                    ;
+
+
 
 sql_value:
-                        INT                 {fprintf(ferr,"INT");$$=value_node(&$1,SQL_INT);        }
-                    |   FLOAT               {fprintf(ferr,"INT");$$=value_node(&$1,SQL_FLOAT);        }
-                    |   LITERAL             {fprintf(ferr,"INT");$$=value_node(&$1,SQL_LITERAL);        }
+                        INT                 {fprintf(stderr,"INT\n");$$=value_node(&$1,SQL_INT);        }
+                    |   FLOAT               {fprintf(stderr,"FLOAT\n");$$=value_node(&$1,SQL_FLOAT);        }
+                    |   LITERAL             {fprintf(stderr,"LITERAL\n");$$=value_node($1,SQL_VARCHAR);        }
                     ;
 
-table_list:             table ',' table_list   {$$=list_node($3,$1);}
-                    |   table              {fprintf(ferr,"table_list\n");    $$=list_node($1,NULL);}
+rel_list:               relation ',' rel_list   {$$=list_node($3,$1);}
+                    |   relation              {fprintf(stderr,"rel_list\n");    $$=list_node($1,NULL);}
                     ;
 
-column:                 WORD '.' WORD     {fprintf(ferr,"rel.col:%s.%s\n",$1,$3);$$=col_node($1,$3);}
-                    |   WORD               {fprintf(ferr,"column:%s\n",$1);$$=col_node($1,"null");} 
+
+column:                 WORD '.' WORD     {fprintf(stderr,"rel.col:%s.%s\n",$1,$3);$$=col_node($1,$3);}
+                    |   WORD               {fprintf(stderr,"column:%s\n",$1);$$=col_node($1,"null");} 
                     ;   
 
-table:                  WORD        {
-                                        fprintf(ferr,"table:%s,\n",$1);
+relation:                  WORD        {
+                                        fprintf(stderr,"relation:%s,\n",$1);
                                         $$=rel_node($1);
                                         }          
                     ;

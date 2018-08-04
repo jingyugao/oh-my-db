@@ -46,26 +46,30 @@
      NONE = 262,
      CREATE = 263,
      DROP = 264,
-     TABLE = 265,
-     INDEX = 266,
-     HELP = 267,
-     VALUES = 268,
-     INSERT = 269,
-     DELET = 270,
-     UPDATE = 271,
-     INTO = 272,
-     AND = 273,
-     OR = 274,
-     NOT = 275,
-     EQ = 276,
-     NE = 277,
-     LT = 278,
-     LE = 279,
-     GT = 280,
-     GE = 281,
-     SELECT = 282,
-     FROM = 283,
-     WHERE = 284
+     DATABASE = 265,
+     TABLE = 266,
+     INDEX = 267,
+     HELP = 268,
+     VALUES = 269,
+     INSERT = 270,
+     DELETE = 271,
+     T_INT = 272,
+     T_FLOAT = 273,
+     T_VARCHAR = 274,
+     UPDATE = 275,
+     INTO = 276,
+     AND = 277,
+     OR = 278,
+     NOT = 279,
+     EQ = 280,
+     NE = 281,
+     LT = 282,
+     LE = 283,
+     GT = 284,
+     GE = 285,
+     SELECT = 286,
+     FROM = 287,
+     WHERE = 288
    };
 #endif
 /* Tokens.  */
@@ -76,26 +80,30 @@
 #define NONE 262
 #define CREATE 263
 #define DROP 264
-#define TABLE 265
-#define INDEX 266
-#define HELP 267
-#define VALUES 268
-#define INSERT 269
-#define DELET 270
-#define UPDATE 271
-#define INTO 272
-#define AND 273
-#define OR 274
-#define NOT 275
-#define EQ 276
-#define NE 277
-#define LT 278
-#define LE 279
-#define GT 280
-#define GE 281
-#define SELECT 282
-#define FROM 283
-#define WHERE 284
+#define DATABASE 265
+#define TABLE 266
+#define INDEX 267
+#define HELP 268
+#define VALUES 269
+#define INSERT 270
+#define DELETE 271
+#define T_INT 272
+#define T_FLOAT 273
+#define T_VARCHAR 274
+#define UPDATE 275
+#define INTO 276
+#define AND 277
+#define OR 278
+#define NOT 279
+#define EQ 280
+#define NE 281
+#define LT 282
+#define LE 283
+#define GT 284
+#define GE 285
+#define SELECT 286
+#define FROM 287
+#define WHERE 288
 
 
 
@@ -111,7 +119,7 @@ SqlOp opval;
 struct SqlNode* n;
 }
 /* Line 1529 of yacc.c.  */
-#line 115 "y.tab.h"
+#line 123 "y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

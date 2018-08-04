@@ -5,21 +5,24 @@
 #include <string>
 #include <utility>
 extern "C" {
-
 void yyerror(const char *s);
-int yylex(
-    void); //该函数是在lex.yy.c里定义的，yyparse()里要调用该函数，为了能编译和链接，必须用extern加以声明
+int yylex(void);
 int yyparse(void);
 }
 
 enum SqlValType {
-    SQL_NULL,
-    SQL_INT,
-    SQL_FLOAT,
-    SQL_CHAR,
-    SQL_LITERAL,
-    SQL_ARRAY
+    SQL_NULL,   //"null"
+    SQL_INT,    //"int"
+    SQL_FLOAT,  //"float"
+    SQL_CHAR,   //"char"
+    SQL_LITERAL,//not used now
+    SQL_VARCHAR,//"varchar"
+    SQL_ARRAY   //"array"
 };
+
+
+
+
 
 struct {
     char *rel_name;
@@ -32,12 +35,16 @@ struct {
 enum SqlKind {
     SQL_CREATE,
     SQL_SELECT,
+    SQL_INSERT,
     SQL_RELATION,
+    SQL_DROP,
     SQL_COLUMN,
+    SQL_ATTR,
     SQL_LIST,
     SQL_VALUE,
     SQL_CONST,
-    SQL_COND
+    SQL_COND,
+    SQL_DB
 };
 
 enum SqlOp {
@@ -49,7 +56,11 @@ enum SqlOp {
     SQL_NE,
     SQL_AND,
     SQL_OR,
-    SQL_NOT
+    SQL_NOT,
+    DB_CREATE,
+    DB_DROP,
+    DB_CLEAR,
+
 };
 
 // struct BaseNode {
@@ -115,18 +126,34 @@ enum SqlOp {
 //         BaseNode *node;
 //         return node;
 
+
 struct SqlNode {
     SqlKind node_kind;
     union {
         struct {
-            char *rel_name;
+            struct SqlNode *rel_node;
             struct SqlNode *col_list;
         } create_node;
 
         struct {
+            struct SqlNode *rel_node;
+        } drop_node;
+
+        struct {
+            SqlOp    db_op;
+            char * db_name;
+        }db_node;
+       
+        struct {
             char *col_name;
             char *rel_name;
         } col_node;
+
+        struct {
+            char *col_name;
+            SqlValType val_type;
+            int len;
+        } attr_node;
 
         struct {
             char *rel_name;
@@ -137,6 +164,12 @@ struct SqlNode {
             struct SqlNode *rel_list;
             struct SqlNode *cond_list; //is not list
         } select_node;
+
+        struct {
+            SqlNode *rel_node;
+            SqlNode *val_list;
+            SqlNode *col_list;//option
+        } insert_node;
 
         struct {
             struct SqlNode *X;
@@ -159,8 +192,7 @@ struct SqlNode {
     } u;
 };
 
-SqlNode* sql_parser(const char *sql_str);
-
+SqlNode *sql_parser(const char *sql_str);
 
 #define GET_CUR(list, cur)                                                     \
     do {                                                                       \
@@ -174,12 +206,17 @@ SqlNode* sql_parser(const char *sql_str);
         list = list->u.list_node.left_list;                                    \
     } while (0)
 
+
 SqlNode *base_node(SqlKind sql_kind);
-SqlNode *create_node(char *rel_name, SqlNode *col_list);
+SqlNode *create_node(SqlNode *rel_node, SqlNode *attr_list);
+SqlNode *drop_node(SqlNode *rel_node);
 SqlNode *select_node(SqlNode *col_list, SqlNode *rel_list, SqlNode *cond_list);
 SqlNode *value_node(void *x, SqlValType t);
+SqlNode *insert_node(SqlNode*rel_node,SqlNode *val_list,SqlNode *col_list);
 SqlNode *cond_node(SqlNode *const x, SqlOp op, SqlNode *const y);
 SqlNode *list_node(SqlNode *const cur, SqlNode *const list);
 SqlNode *col_node(char *col_name, char *const rel_name);
 SqlNode *rel_node(char *const rel_name);
+SqlNode *attr_node(char *col_name, SqlValType value_type, int len = 0);
+SqlNode *db_node(char *db_name,SqlOp op);
 void print_node(FILE *f, SqlNode *root);
