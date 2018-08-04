@@ -6,6 +6,7 @@
 
 #define MAX_LEN 255
 FILE * ferr;
+extern SqlNode *parse_tree;
 char *make_string(const char*src,int len);
 char *get_literal(const char *src,int len);
 int get_id(char* s);
@@ -105,8 +106,7 @@ s_num       [+\-]?{num}
 
 %%
 
-
-int main(int argc,char **argv){
+SqlNode* sql_parser(const char* sql_str){
     // ferr=fopen("err.log","w");
     // if(ferr==NULL){
     //     printf("cant open err.log\n");
@@ -116,11 +116,11 @@ int main(int argc,char **argv){
     setbuf(ferr,NULL);
 
     fprintf(ferr,"begin log\n");
-    char buf[]="select A FROM B WHERE c = d";
-    yy_scan_string(buf);
+    yy_scan_string(sql_str);
     yyparse();
-    return 0;
+    return parse_tree;
 }
+
 
 
 

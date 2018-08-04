@@ -474,6 +474,7 @@ char *yytext;
 
 #define MAX_LEN 255
 FILE * ferr;
+extern SqlNode *parse_tree;
 char *make_string(const char*src,int len);
 char *get_literal(const char *src,int len);
 int get_id(char* s);
@@ -547,7 +548,7 @@ int lower(char *dst, char *src, int max)
 
 
 
-#line 551 "lex.yy.c"
+#line 552 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -730,9 +731,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 89 "scan.l"
+#line 90 "scan.l"
 
-#line 736 "lex.yy.c"
+#line 737 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -817,89 +818,89 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 90 "scan.l"
+#line 91 "scan.l"
 {BEGIN(COMMENT);}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 91 "scan.l"
+#line 92 "scan.l"
 {/*ingore the '*' */}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 92 "scan.l"
+#line 93 "scan.l"
 {BEGIN(INITIAL);}
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 93 "scan.l"
+#line 94 "scan.l"
 {/* ignore whilespace */}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 94 "scan.l"
+#line 95 "scan.l"
 {yylval.ival=atoi(yytext);fprintf(ferr,"INT:%d",yylval.ival);  return INT;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 95 "scan.l"
+#line 96 "scan.l"
 {yylval.fval=atof(yytext);return FLOAT;}
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 96 "scan.l"
+#line 97 "scan.l"
 {yylval.sval=get_literal(yytext,yyleng);fprintf(ferr,"LITERAL:%s",yylval.sval);  return LITERAL;}
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 97 "scan.l"
+#line 98 "scan.l"
 {printf("newline in literal string is illegal!\n");}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 98 "scan.l"
+#line 99 "scan.l"
 { int id=get_id(yytext);fprintf(ferr,"id:%d,val:%s\n",id,yytext);   return id;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 99 "scan.l"
+#line 100 "scan.l"
 {return LT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 100 "scan.l"
+#line 101 "scan.l"
 {return LE;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 101 "scan.l"
+#line 102 "scan.l"
 {return GT;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 102 "scan.l"
+#line 103 "scan.l"
 {return GE;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 103 "scan.l"
+#line 104 "scan.l"
 {return EQ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 104 "scan.l"
+#line 105 "scan.l"
 {return NE;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 106 "scan.l"
+#line 107 "scan.l"
 ECHO;
 	YY_BREAK
-#line 903 "lex.yy.c"
+#line 904 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -1897,12 +1898,11 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 106 "scan.l"
+#line 107 "scan.l"
 
 
 
-
-int main(int argc,char **argv){
+SqlNode* sql_parser(const char* sql_str){
     // ferr=fopen("err.log","w");
     // if(ferr==NULL){
     //     printf("cant open err.log\n");
@@ -1912,11 +1912,11 @@ int main(int argc,char **argv){
     setbuf(ferr,NULL);
 
     fprintf(ferr,"begin log\n");
-    char buf[]="select A FROM B WHERE c = d";
-    yy_scan_string(buf);
+    yy_scan_string(sql_str);
     yyparse();
-    return 0;
+    return parse_tree;
 }
+
 
 
 

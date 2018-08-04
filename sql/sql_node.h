@@ -1,9 +1,9 @@
 #include <cassert>
 #include <cstdio>
 #include <list>
-#include<utility>
-#include<string>
 #include <stdlib.h>
+#include <string>
+#include <utility>
 extern "C" {
 
 void yyerror(const char *s);
@@ -11,6 +11,7 @@ int yylex(
     void); //该函数是在lex.yy.c里定义的，yyparse()里要调用该函数，为了能编译和链接，必须用extern加以声明
 int yyparse(void);
 }
+
 enum SqlValType {
     SQL_NULL,
     SQL_INT,
@@ -28,7 +29,6 @@ struct {
     void *data;
 } ColItem;
 
- 
 enum SqlKind {
     SQL_CREATE,
     SQL_SELECT,
@@ -111,15 +111,9 @@ enum SqlOp {
 //     std::list<BaseNode*> items;     //op or const or column
 // };
 
-
-
 //  constexpr   BaseNode * createNode(const SqlKind kind){
 //         BaseNode *node;
 //         return node;
-    
-
-     
-
 
 struct SqlNode {
     SqlKind node_kind;
@@ -164,6 +158,9 @@ struct SqlNode {
         } list_node;
     } u;
 };
+
+SqlNode* sql_parser(const char *sql_str);
+
 
 #define GET_CUR(list, cur)                                                     \
     do {                                                                       \

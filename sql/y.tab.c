@@ -134,7 +134,7 @@
 
 #include"sql_node.h"
 
-static SqlNode *parse_tree;
+SqlNode *parse_tree;
 
 extern FILE * ferr;
 
