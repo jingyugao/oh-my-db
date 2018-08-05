@@ -1,5 +1,7 @@
 #include "sql_node.h"
-
+#include <cmath>
+#include <vector>
+using namespace std;
 SqlNode *base_node(SqlKind sql_kind)
 {
     //printf("new node\n");
@@ -68,22 +70,6 @@ SqlNode *cond_node(SqlNode *const x, SqlOp op, SqlNode *const y)
     node->u.cond_node.X = x;
     node->u.cond_node.Y = y;
     node->u.cond_node.op = op;
-    // if (x->node_kind==SQL_COLUMN&&y->node_kind==SQL_COLUMN){
-
-    // }
-
-    // if (x->node_kind==SQL_COLUMN&&y->node_kind==SQL_VALUE){
-
-    // }
-
-    // if (x->node_kind==SQL_VALUE&&y->node_kind==SQL_COLUMN){
-
-    // }
-
-    // if (x->node_kind==SQL_VALUE&&y->node_kind==SQL_VALUE){
-
-    // }
-
     return node;
 }
 
@@ -138,6 +124,27 @@ SqlNode *db_node(char *db_name, SqlOp op)
     return node;
 }
 
+SqlNode *set_node(SqlNode *col_node, SqlNode *val_node)
+{
+    SqlNode *node = base_node(SQL_SET);
+    node->u.set_node.col_node = col_node;
+    node->u.set_node.val_node = val_node;
+    return node;
+}
+SqlNode *update_node(SqlNode *rel_node, SqlNode *set_list, SqlNode *cond_list)
+{
+    SqlNode *node = base_node(SQL_UPDATE);
+    node->u.update_node.rel_node = rel_node;
+    node->u.update_node.set_list = set_list;
+    node->u.update_node.cond_list = cond_list;
+    return node;
+}
+SqlNode *delete_node(SqlNode *rel_node,SqlNode *cond_list){
+    SqlNode *node=base_node(SQL_DELETE);
+    node->u.delete_node.rel_node=rel_node;
+    node->u.delete_node.cond_list=cond_list;
+    return node;
+}
 static const char *get_value_type_name(SqlValType t)
 {
     switch (t) {
@@ -176,8 +183,66 @@ static const char *get_value_type_name(SqlValType t)
         }                                                                      \
     } while (0);
 
+void PrintCondNode(vector<SqlNode *> level, int d)
+{
+
+    //assert(node->node_kind==SQL_COND);
+    if (d == 0) {
+        return;
+    }
+    bool end = 0;
+    printf("\n");
+    for (int i = 0; i < std::pow(2, d); i++) {
+        printf(" ");
+    }
+    std::vector<SqlNode *> l2;
+    int space = -1 + std::pow(2, d + 1);
+
+    for (int i = 0; i < level.size(); i++) {
+        SqlNode *p = level[i];
+        if (p == NULL) {
+            printf("_");
+            l2.push_back(NULL);
+            l2.push_back(NULL);
+        } else if (p->node_kind == SQL_COND) {
+            end = 1;
+            printf("%d", p->u.cond_node.op);
+            l2.push_back(p->u.cond_node.X);
+            l2.push_back(p->u.cond_node.Y);
+        } else if (p->node_kind == SQL_VALUE) {
+            printf("%d", p->u.val_node.v_type);
+            l2.push_back(NULL);
+            l2.push_back(NULL);
+        } else if (p->node_kind == SQL_COLUMN) {
+            printf("%s", p->u.col_node.col_name);
+            l2.push_back(NULL);
+            l2.push_back(NULL);
+        } else {
+            printf("e ");
+        }
+        for (int j = 0; j < space; j++)
+            printf(" ");
+    }
+    if (end) {
+        PrintCondNode(l2, d - 1);
+    }
+}
+
+int max_depth(SqlNode *cond)
+{
+    if (cond == NULL) {
+        return 0;
+    } else if (cond->node_kind == SQL_COND) {
+        return 1 + max(max_depth(cond->u.cond_node.X),
+                       max_depth(cond->u.cond_node.Y));
+    } else {
+        return 1;
+    }
+}
 void print_node(FILE *f, SqlNode *root)
 {
+    std::vector<SqlNode *> l;
+
     SqlNode *p = root;
     if (f == NULL || root == NULL)
         return;
@@ -230,54 +295,9 @@ void print_node(FILE *f, SqlNode *root)
 
             fprintf(f, "cond_list:[");
             q = p->u.select_node.cond_list;
-            if (q) {
-                SqlNode *x = q->u.cond_node.X;
-                SqlOp op = q->u.cond_node.op;
-                SqlNode *y = q->u.cond_node.Y;
 
-                if (x->node_kind == SQL_COLUMN) {
-                    fprintf(f, "%s.%s ", x->u.col_node.rel_name,
-                            x->u.col_node.col_name);
-                }
-
-                if (x->node_kind == SQL_VALUE) {
-                    fprintf(f, "%s(%s) ", x->u.val_node.ival,
-                            x->u.col_node.col_name);
-                }
-
-                switch (op) {
-                    case SQL_EQ:
-                        fprintf(f, "=");
-                        break;
-                    case SQL_GT:
-                        fprintf(f, ">");
-                        break;
-                    case SQL_LT:
-                        fprintf(f, "<");
-                        break;
-                    case SQL_GE:
-                        fprintf(f, ">=");
-                        break;
-                    case SQL_LE:
-                        fprintf(f, "<=");
-                        break;
-                    case SQL_AND:
-                        fprintf(f, "and");
-                        break;
-                    case SQL_OR:
-                        fprintf(f, "or");
-                        break;
-                    case SQL_NOT:
-                        fprintf(f, "not");
-                        break;
-                    default:
-                        fprintf(f, "unknow");
-                }
-                if (y->node_kind == SQL_COLUMN) {
-                    fprintf(f, "%s.%s ", y->u.col_node.rel_name,
-                            y->u.col_node.col_name);
-                }
-            }
+            l.push_back(q);
+            PrintCondNode(l, max_depth(q));
             fprintf(f, "]\n");
             break;
 
@@ -292,7 +312,7 @@ void print_node(FILE *f, SqlNode *root)
                  q = q->u.list_node.left_list) {
                 assert(q->node_kind == SQL_LIST);
                 SqlNode *cur = q->u.list_node.cur_node;
-                PrintValueNode(cur,f);
+                PrintValueNode(cur, f);
             }
             fprintf(f, "]");
 
@@ -305,9 +325,9 @@ void print_node(FILE *f, SqlNode *root)
                 fprintf(f, "%s.%s,", cur->u.col_node.rel_name,
                         cur->u.col_node.col_name);
             }
-            fprintf(f, "]\n");
-
+            fprintf(f, "\n]\n");
+            break;
         default:
-            fprintf(f, "konwn kind:%d", p->node_kind);
+            fprintf(f, "unkonwn kind:%d", p->node_kind);
     }
 }

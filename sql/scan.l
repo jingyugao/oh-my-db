@@ -32,8 +32,8 @@ TokenItem token_map[]={
     {"float",T_FLOAT},
     {"varchar",T_VARCHAR},
     {"database",DATABASE},
-    {"into",INTO}
-
+    {"into",INTO},
+    {"set",SET}
 }; 
 
 char *get_literal(const char *src,int len){

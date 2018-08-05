@@ -46,30 +46,31 @@
      NONE = 262,
      CREATE = 263,
      DROP = 264,
-     DATABASE = 265,
-     TABLE = 266,
-     INDEX = 267,
-     HELP = 268,
-     VALUES = 269,
-     INSERT = 270,
-     DELETE = 271,
-     T_INT = 272,
-     T_FLOAT = 273,
-     T_VARCHAR = 274,
-     UPDATE = 275,
-     INTO = 276,
-     AND = 277,
-     OR = 278,
-     NOT = 279,
-     EQ = 280,
-     NE = 281,
-     LT = 282,
-     LE = 283,
-     GT = 284,
-     GE = 285,
-     SELECT = 286,
-     FROM = 287,
-     WHERE = 288
+     SET = 265,
+     DATABASE = 266,
+     TABLE = 267,
+     INDEX = 268,
+     HELP = 269,
+     VALUES = 270,
+     INSERT = 271,
+     DELETE = 272,
+     T_INT = 273,
+     T_FLOAT = 274,
+     T_VARCHAR = 275,
+     UPDATE = 276,
+     INTO = 277,
+     AND = 278,
+     OR = 279,
+     NOT = 280,
+     EQ = 281,
+     NE = 282,
+     LT = 283,
+     LE = 284,
+     GT = 285,
+     GE = 286,
+     SELECT = 287,
+     FROM = 288,
+     WHERE = 289
    };
 #endif
 /* Tokens.  */
@@ -80,30 +81,31 @@
 #define NONE 262
 #define CREATE 263
 #define DROP 264
-#define DATABASE 265
-#define TABLE 266
-#define INDEX 267
-#define HELP 268
-#define VALUES 269
-#define INSERT 270
-#define DELETE 271
-#define T_INT 272
-#define T_FLOAT 273
-#define T_VARCHAR 274
-#define UPDATE 275
-#define INTO 276
-#define AND 277
-#define OR 278
-#define NOT 279
-#define EQ 280
-#define NE 281
-#define LT 282
-#define LE 283
-#define GT 284
-#define GE 285
-#define SELECT 286
-#define FROM 287
-#define WHERE 288
+#define SET 265
+#define DATABASE 266
+#define TABLE 267
+#define INDEX 268
+#define HELP 269
+#define VALUES 270
+#define INSERT 271
+#define DELETE 272
+#define T_INT 273
+#define T_FLOAT 274
+#define T_VARCHAR 275
+#define UPDATE 276
+#define INTO 277
+#define AND 278
+#define OR 279
+#define NOT 280
+#define EQ 281
+#define NE 282
+#define LT 283
+#define LE 284
+#define GT 285
+#define GE 286
+#define SELECT 287
+#define FROM 288
+#define WHERE 289
 
 
 
@@ -119,7 +121,7 @@ SqlOp opval;
 struct SqlNode* n;
 }
 /* Line 1529 of yacc.c.  */
-#line 123 "y.tab.h"
+#line 125 "y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

@@ -11,18 +11,14 @@ int yyparse(void);
 }
 
 enum SqlValType {
-    SQL_NULL,   //"null"
-    SQL_INT,    //"int"
-    SQL_FLOAT,  //"float"
-    SQL_CHAR,   //"char"
-    SQL_LITERAL,//not used now
-    SQL_VARCHAR,//"varchar"
-    SQL_ARRAY   //"array"
+    SQL_NULL,    //"null"
+    SQL_INT,     //"int"
+    SQL_FLOAT,   //"float"
+    SQL_CHAR,    //"char"
+    SQL_LITERAL, //not used now
+    SQL_VARCHAR, //"varchar"
+    SQL_ARRAY    //"array"
 };
-
-
-
-
 
 struct {
     char *rel_name;
@@ -44,7 +40,10 @@ enum SqlKind {
     SQL_VALUE,
     SQL_CONST,
     SQL_COND,
-    SQL_DB
+    SQL_DB,
+    SQL_SET,
+    SQL_UPDATE,
+    SQL_DELETE
 };
 
 enum SqlOp {
@@ -62,6 +61,7 @@ enum SqlOp {
     DB_CLEAR,
 
 };
+static char *OpStr[] = {"eq", "gt", "lt", "le", "ge", "ne", "ad", "or", "nt"};
 
 // struct BaseNode {
 //     SqlKind kind;
@@ -126,7 +126,6 @@ enum SqlOp {
 //         BaseNode *node;
 //         return node;
 
-
 struct SqlNode {
     SqlKind node_kind;
     union {
@@ -140,10 +139,10 @@ struct SqlNode {
         } drop_node;
 
         struct {
-            SqlOp    db_op;
-            char * db_name;
-        }db_node;
-       
+            SqlOp db_op;
+            char *db_name;
+        } db_node;
+
         struct {
             char *col_name;
             char *rel_name;
@@ -168,11 +167,11 @@ struct SqlNode {
         struct {
             SqlNode *rel_node;
             SqlNode *val_list;
-            SqlNode *col_list;//option
+            SqlNode *col_list; //option
         } insert_node;
 
         struct {
-            struct SqlNode *X;
+            struct SqlNode *X; //val_node or cond_node
             struct SqlNode *Y;
             SqlOp op;
         } cond_node;
@@ -184,6 +183,22 @@ struct SqlNode {
             int len;
             SqlValType v_type;
         } val_node;
+
+        struct {
+            SqlNode *val_node;
+            SqlNode *col_node;
+        } set_node;
+
+        struct {
+            SqlNode *rel_node;
+            SqlNode *set_list;
+            SqlNode *cond_list;
+        } update_node;
+
+        struct {
+            SqlNode *rel_node;
+            SqlNode *cond_list;
+        } delete_node;
 
         struct {
             struct SqlNode *cur_node;
@@ -206,17 +221,19 @@ SqlNode *sql_parser(const char *sql_str);
         list = list->u.list_node.left_list;                                    \
     } while (0)
 
-
 SqlNode *base_node(SqlKind sql_kind);
 SqlNode *create_node(SqlNode *rel_node, SqlNode *attr_list);
 SqlNode *drop_node(SqlNode *rel_node);
 SqlNode *select_node(SqlNode *col_list, SqlNode *rel_list, SqlNode *cond_list);
 SqlNode *value_node(void *x, SqlValType t);
-SqlNode *insert_node(SqlNode*rel_node,SqlNode *val_list,SqlNode *col_list);
+SqlNode *insert_node(SqlNode *rel_node, SqlNode *val_list, SqlNode *col_list);
 SqlNode *cond_node(SqlNode *const x, SqlOp op, SqlNode *const y);
 SqlNode *list_node(SqlNode *const cur, SqlNode *const list);
 SqlNode *col_node(char *col_name, char *const rel_name);
 SqlNode *rel_node(char *const rel_name);
 SqlNode *attr_node(char *col_name, SqlValType value_type, int len = 0);
-SqlNode *db_node(char *db_name,SqlOp op);
+SqlNode *db_node(char *db_name, SqlOp op);
+SqlNode *set_node(SqlNode *col_node, SqlNode *val_node);
+SqlNode *update_node(SqlNode *rel_node, SqlNode *set_list, SqlNode *cond_list);
+SqlNode *delete_node(SqlNode *rel_node,SqlNode *cond_list);
 void print_node(FILE *f, SqlNode *root);
