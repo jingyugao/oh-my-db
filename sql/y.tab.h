@@ -54,23 +54,24 @@
      VALUES = 270,
      INSERT = 271,
      DELETE = 272,
-     T_INT = 273,
-     T_FLOAT = 274,
-     T_VARCHAR = 275,
-     UPDATE = 276,
-     INTO = 277,
-     AND = 278,
-     OR = 279,
-     NOT = 280,
-     EQ = 281,
-     NE = 282,
-     LT = 283,
-     LE = 284,
-     GT = 285,
-     GE = 286,
-     SELECT = 287,
-     FROM = 288,
-     WHERE = 289
+     PRIMARY = 273,
+     T_INT = 274,
+     T_FLOAT = 275,
+     T_VARCHAR = 276,
+     UPDATE = 277,
+     INTO = 278,
+     AND = 279,
+     OR = 280,
+     NOT = 281,
+     EQ = 282,
+     NE = 283,
+     LT = 284,
+     LE = 285,
+     GT = 286,
+     GE = 287,
+     SELECT = 288,
+     FROM = 289,
+     WHERE = 290
    };
 #endif
 /* Tokens.  */
@@ -89,23 +90,24 @@
 #define VALUES 270
 #define INSERT 271
 #define DELETE 272
-#define T_INT 273
-#define T_FLOAT 274
-#define T_VARCHAR 275
-#define UPDATE 276
-#define INTO 277
-#define AND 278
-#define OR 279
-#define NOT 280
-#define EQ 281
-#define NE 282
-#define LT 283
-#define LE 284
-#define GT 285
-#define GE 286
-#define SELECT 287
-#define FROM 288
-#define WHERE 289
+#define PRIMARY 273
+#define T_INT 274
+#define T_FLOAT 275
+#define T_VARCHAR 276
+#define UPDATE 277
+#define INTO 278
+#define AND 279
+#define OR 280
+#define NOT 281
+#define EQ 282
+#define NE 283
+#define LT 284
+#define LE 285
+#define GT 286
+#define GE 287
+#define SELECT 288
+#define FROM 289
+#define WHERE 290
 
 
 
@@ -121,7 +123,7 @@ SqlOp opval;
 struct SqlNode* n;
 }
 /* Line 1529 of yacc.c.  */
-#line 125 "y.tab.h"
+#line 127 "y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

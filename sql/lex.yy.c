@@ -501,7 +501,8 @@ TokenItem token_map[]={
     {"varchar",T_VARCHAR},
     {"database",DATABASE},
     {"into",INTO},
-    {"set",SET}
+    {"set",SET},
+    {"primary",PRIMARY}
 }; 
 
 char *get_literal(const char *src,int len){
@@ -551,7 +552,7 @@ int lower(char *dst, char *src, int max)
 
 
 
-#line 555 "lex.yy.c"
+#line 556 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -734,9 +735,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 93 "scan.l"
+#line 94 "scan.l"
 
-#line 740 "lex.yy.c"
+#line 741 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -821,94 +822,94 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 94 "scan.l"
+#line 95 "scan.l"
 {BEGIN(COMMENT);}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 95 "scan.l"
+#line 96 "scan.l"
 {/*ingore the '*' */}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 96 "scan.l"
+#line 97 "scan.l"
 {BEGIN(INITIAL);}
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 97 "scan.l"
+#line 98 "scan.l"
 {/* ignore whilespace */}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 98 "scan.l"
+#line 99 "scan.l"
 {yylval.ival=atoi(yytext);fprintf(stderr,"INT:%d\n",yylval.ival);  return INT;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 99 "scan.l"
+#line 100 "scan.l"
 {yylval.fval=atof(yytext);return FLOAT;}
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 100 "scan.l"
+#line 101 "scan.l"
 {yylval.sval=get_literal(yytext,yyleng);fprintf(stderr,"LITERAL:%s\n",yylval.sval);  return LITERAL;}
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 101 "scan.l"
+#line 102 "scan.l"
 {printf("newline in literal string is illegal!\n");}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 102 "scan.l"
+#line 103 "scan.l"
 { int id=get_id(yytext);fprintf(stderr,"id:%d,val:%s\n",id,yytext);   return id;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 103 "scan.l"
+#line 104 "scan.l"
 {return LT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 104 "scan.l"
+#line 105 "scan.l"
 {return LE;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 105 "scan.l"
+#line 106 "scan.l"
 {return GT;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 106 "scan.l"
+#line 107 "scan.l"
 {return GE;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 107 "scan.l"
+#line 108 "scan.l"
 {return EQ;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 108 "scan.l"
+#line 109 "scan.l"
 {return NE;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 109 "scan.l"
+#line 110 "scan.l"
 { return (yytext[0]);	}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 111 "scan.l"
+#line 112 "scan.l"
 ECHO;
 	YY_BREAK
-#line 912 "lex.yy.c"
+#line 913 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 	yyterminate();
@@ -1906,7 +1907,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 111 "scan.l"
+#line 112 "scan.l"
 
 
 
