@@ -6,7 +6,7 @@ const int N = 30;
 int main()
 {
 
-    b_tree<int, int, 5> bt;
+    BTree<int, int, 5> bt;
     set<int> a;
 
     for (int i = 0; i < N; i++) {

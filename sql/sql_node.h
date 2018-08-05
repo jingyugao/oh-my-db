@@ -20,13 +20,7 @@ enum SqlValType {
     SQL_ARRAY    //"array"
 };
 
-struct {
-    char *rel_name;
-    char *col_name;
-    SqlValType v_type;
-    int len;
-    void *data;
-} ColItem;
+
 
 enum SqlKind {
     SQL_CREATE,

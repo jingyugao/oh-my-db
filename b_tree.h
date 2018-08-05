@@ -15,7 +15,7 @@ namespace omd {
 
 template <class _Key, class _Tp, int deg = 4, class _Compare = std::less<_Key>>
 //class _Alloc = std::allocator<std::pair<const _Key, _Tp>>>
-class b_tree {
+class BTree {
 
     //  struct inner_node;
     //   typedef inner_node node_type;
@@ -176,7 +176,7 @@ public:
         void check() { assert(node && pos < node->use); }
     };
 
-    b_tree()
+    BTree()
     {
         root = create_node();
         root->isLeaf = true;
@@ -239,7 +239,7 @@ public:
         }
         return ret;
     }
-    friend ostream &operator<<(ostream &out, const b_tree &bt)
+    friend ostream &operator<<(ostream &out, const BTree &bt)
     {
         std::queue<node_type *> q;
 
