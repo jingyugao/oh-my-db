@@ -10,11 +10,11 @@ SqlNode *base_node(SqlKind sql_kind)
     return node;
 }
 
-SqlNode *create_node(SqlNode *rel_node, SqlNode *col_list)
+SqlNode *create_node(SqlNode *rel_node, SqlNode *attr_list)
 {
     SqlNode *node = base_node(SQL_CREATE);
     node->u.create_node.rel_node = rel_node;
-    node->u.create_node.col_list = col_list;
+    node->u.create_node.attr_list = attr_list;
     return node;
 }
 
@@ -253,7 +253,7 @@ void print_node(FILE *f, SqlNode *root)
             fprintf(f, "SQL_CREATE:rel_name:%s,",
                     p->u.create_node.rel_node->u.rel_node.rel_name);
             fprintf(f, "col_list:[");
-            for (SqlNode *q = p->u.create_node.col_list; q;
+            for (SqlNode *q = p->u.create_node.attr_list; q;
                  q = q->u.list_node.left_list) {
                 assert(q->node_kind == SQL_LIST);
                 SqlNode *attr = q->u.list_node.cur_node;
