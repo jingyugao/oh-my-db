@@ -97,6 +97,6 @@ int main(){
     const char*sql_update="update student set name=\"xiaoming\" where ID=10002"; 
     const char*sql_delete="delete from student where name=\"xiaomin\"";
     //tree_test();
-    sql_parser(sql_delete);
+    sql_parser(sql_create);
     return 0;
 }

@@ -107,6 +107,7 @@ SqlNode *attr_node(char *col_name, SqlValType value_type, int len)
         case SQL_FLOAT:
             len = sizeof(float);
         case SQL_VARCHAR:
+            len ++;  //extra char to store '\0'
             break;
         default:
             printf("err value_type");
