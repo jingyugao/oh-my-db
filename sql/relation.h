@@ -19,6 +19,17 @@ typedef variant<int, float, string> vt;
 
 struct Record {
 
+    const vt &get_val(const string name){
+        int i=0;
+        while(i< attrs.size()&&attrs[i].name!=name){
+            i++;
+        }
+        if (i>=attrs.size()){
+            return vt();
+        }else{
+            return values[i];
+        }
+    }
     vector<vt> values;
     char *buf;
     vector<Attribute> attrs;
@@ -69,6 +80,19 @@ public:
             assert(p==rd+rd_size);
         }
     }
+
+    void remove(int primary_key){
+
+
+    }
+
+    Record get_record(int primary_key){
+        Record r;
+        r.attrs=attrs;
+        //r.buf=
+        return r;
+    }
+
     vt get_val(const char * rd,const string &col_name){
         for(auto it=attrs.begin();it!=attrs.end();++it){
             if(it->name==col_name){
@@ -79,10 +103,6 @@ public:
         }
 
     }
-private:
-
-
-
 
 
 
@@ -106,6 +126,8 @@ private:
         //     rd_size+=cur->u.attr_node.len;
         // }
     }
+
+
 
     void drop(){
 
