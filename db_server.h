@@ -8,6 +8,10 @@ struct op {
 class dbServer {
 public:
     vector<op> parse(const string &str) { return vector<op>(); }
+
+
+public:
+
 }
 } // namespace omd
 #endif
