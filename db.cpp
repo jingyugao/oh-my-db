@@ -1,5 +1,16 @@
 #include "db.h"
+
+#include <sys/stat.h>
+
 namespace omd {
+
+void db::db(const string &name){
+    this->_name=name;
+    this->_path=string(DATA_PATH)+name+"/";
+    int mk_err = mkdir(_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    
+}
+
 void db::insert(const dbObject &obj)
 {
     int pos = -1;
@@ -28,3 +39,4 @@ void db::delele(const key_type primary_key)
 }
 void db::store() {}
 } // namespace omd
+

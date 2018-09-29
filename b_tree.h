@@ -13,7 +13,7 @@
 using namespace std;
 namespace omd {
 
-template <class _Key, class _Tp, int deg = 4, class _Compare = std::less<_Key>>
+template <class _Key, class _Tp,int len, int deg = 4, class _Compare = std::less<_Key>>
 //class _Alloc = std::allocator<std::pair<const _Key, _Tp>>>
 class BTree {
 
@@ -50,6 +50,7 @@ public:
         node_type *prev, *next; //left brother and right brother
         node_type *Parent;
         key_type Keys[deg + 1]; //last is sentiel
+        data_type Datas[deg];
         node_type *Children[deg + 2];
         int get_id() { return this ? id : 0; }
         int id;
@@ -359,7 +360,7 @@ private:
         assert(node->isLeaf);
         int i = find_pos(node, k);
         node->insert_key(i, k);
-        (void) v;
+        
         return i;
     }
 

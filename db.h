@@ -1,5 +1,7 @@
 #ifndef DB_H
 #define DB_H
+
+#include"cfg_def.h"
 #include "b_plus_tree.h"
 #include <stack>
 #include <string>
@@ -8,15 +10,40 @@ using namespace std;
 
 enum dbType { Int = 0, String = 1 };
 namespace omd {
-struct dbObject {
-    int _key;
-    string _data;
+struct column {
+    int primary_key;
 };
+
+class table {
+public:
+    table(string name){
+
+    }
+
+    
+
+private:
+
+    column *get_raw(int n){
+        return (column*)(_data+n*_col_size);
+    }
+    string _name;
+    bplustree<key_type, dbObject *> _bpt;
+
+    char * _data;
+    int _col_size;
+}
+
+
+
+
 class db {
 public:
+    db(const string &name);
+    
     typedef int key_type;
     typedef pair<key_t, string> value_type;
-    const string &getName() const { return _name; }
+
     void insert(const key_t primary_key, const string data)
     {
         dbObject d;
@@ -36,7 +63,12 @@ private:
     vector<dbObject> _data;
     stack<int> _freeNode;
     string _name;
+    string _path;
 };
+
+
+
+
 } // namespace omd
 
 #endif

@@ -11,7 +11,9 @@ public:
 
 
 public:
-
+    db *create_db(const string &name){
+        
+    }
 }
 } // namespace omd
 #endif
