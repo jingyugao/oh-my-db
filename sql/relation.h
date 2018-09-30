@@ -9,6 +9,7 @@
 #include "sql_node.h"
 
 using namespace std;
+class Index;
 
 struct Attribute {
     SqlValType value_type;
@@ -32,7 +33,7 @@ struct Record {
     }
     vector<vt> values;
     char *buf;
-    vector<Attribute> attrs;
+
 };
 
 class buffer {
@@ -148,7 +149,7 @@ public:
         std::vector<char *>::iterator pos = lower_bound(rds.begin(), rds.end());
         rds.insert(pos, rd);
     }
-
+    vector<Index> indexs;
     vector<Attribute> attrs;
     int rd_size;
     vector<char *> rds;
@@ -160,3 +161,10 @@ public:
     // char *cur;
     //char * rds;
 };
+
+class Index{
+
+
+
+
+}
