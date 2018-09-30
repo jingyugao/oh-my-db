@@ -7,17 +7,17 @@ namespace omd {
 
 class CachBase {
 public:
-    void acccess(int k) = 0;
-}
+    virtual void acccess(int k) = 0;
+};
 
 class LRU : public CachBase {
 public:
-    void LRU(int size = 64);
+    LRU(int size = 64);
     void acccess(int k);
 
 private:
     queue<int> _q;
-}
+};
 } // namespace omd
 
 #endif
