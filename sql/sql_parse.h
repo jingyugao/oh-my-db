@@ -77,6 +77,9 @@ struct SqlNode {
             char *col_name;
             SqlValType val_type;
             int len;
+            bool IsPrimaryKey;
+            bool NotNULL;
+            
         } attr_node;
 
         struct {
