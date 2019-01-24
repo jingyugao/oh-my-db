@@ -11,11 +11,13 @@
 #define logLine(x) void(0);
 #endif
 using namespace std;
-namespace omd {
+namespace omd
+{
 
-template <class _Key, class _Tp,int len, int deg = 4, class _Compare = std::less<_Key>>
+template <class _Key, class _Tp, /* int len,*/ int deg = 4, class _Compare = std::less<_Key>>
 //class _Alloc = std::allocator<std::pair<const _Key, _Tp>>>
-class BTree {
+class BTree
+{
 
     //  struct inner_node;
     //   typedef inner_node node_type;
@@ -35,7 +37,7 @@ class BTree {
     //    value_type Keys[deg+1];//last is sentiel
     //}
 
-public:
+  public:
     typedef _Key key_type;
     typedef _Tp data_type;
     typedef std::pair<key_type, data_type> value_type;
@@ -44,7 +46,8 @@ public:
     static const int min_slot = (deg - 1) / 2;
     static const int max_slot = deg;
 
-    struct node_type {
+    struct node_type
+    {
         bool isLeaf;
         int use;
         node_type *prev, *next; //left brother and right brother
@@ -60,12 +63,15 @@ public:
         void insert(int i, std::pair<key_type, node_type *> val)
         {
             use++;
-            for (int j = use - 1; j > i; j--) {
+            for (int j = use - 1; j > i; j--)
+            {
                 Keys[j] = Keys[j - 1];
             }
             Keys[i] = val.first;
-            if (!isLeaf) {
-                for (int j = use ; j > i; j--) {
+            if (!isLeaf)
+            {
+                for (int j = use; j > i; j--)
+                {
                     Children[j] = Children[j - 1];
                 }
                 Children[i] = val.second;
@@ -85,14 +91,16 @@ public:
         void insert_key(int i, const key_type &k)
         {
             use++;
-            for (int j = use - 1; j > i; j--) {
+            for (int j = use - 1; j > i; j--)
+            {
                 Keys[j] = Keys[j - 1];
             }
             Keys[i] = k;
         }
         void remove_key(int i)
         {
-            for (int j = i; j < use - 1; j++) {
+            for (int j = i; j < use - 1; j++)
+            {
                 Keys[i] = Keys[i + 1];
             }
             use--;
@@ -125,12 +133,15 @@ public:
 
         void remove(int i)
         {
-            for (int j = i; j < use - 1; j++) {
+            for (int j = i; j < use - 1; j++)
+            {
                 Keys[j] = Keys[j + 1];
             }
 
-            if (!isLeaf) {
-                for (int j = i; j < use + 1; j++) {
+            if (!isLeaf)
+            {
+                for (int j = i; j < use + 1; j++)
+                {
                     Children[j] = Children[j + 1];
                 }
             }
@@ -170,11 +181,63 @@ public:
         node_type *last_child() const { return Children[use]; }
     };
     //simple iteator
-    struct loc {
+    struct loc
+    {
+        loc(node_type *n, int p)
+        {
+            node = n;
+            pos = p;
+        }
+        key_type getKey(){
+            return node->Keys[pos];
+        }
+        data_type getVal(){
+            return node->Datas[pos];
+        }
         node_type *node;
         int pos;
+        loc next()
+        {
+            bool isLeaf = node->isLeaf;
+            int use = node->use;
 
+            int p2 = pos + 1;
+            if (isLeaf)
+            {
+                // is the last one
+                if (pos == use)
+                {
+                    return *this;
+                }
+                if (p2 == use)
+                {
+                    auto next = node->next;
+                    if (next == nullptr)
+                    {
+                        return loc(node, p2);
+                    }
+                    else
+                    {
+                        return loc(next, 0);
+                    }
+                }
+                if (p2 < use)
+                {
+                    return loc(node, p2);
+                }
+            }
+            // is the last one
+            if (pos == use)
+            {
+                return *this;
+            }
+            return loc(node->get_child(p2), 0);
+        }
         void check() { assert(node && pos < node->use); }
+        bool operator==(const loc &r)
+        {
+            return node == r.node && pos == r.pos;
+        }
     };
 
     BTree()
@@ -182,10 +245,40 @@ public:
         root = create_node();
         root->isLeaf = true;
     }
-    void insert(const key_type &key, const data_type &val)
+    loc begin()
+    {
+        return left();
+    }
+    loc end()
+    {
+        loc rgt = right();
+        rgt.pos++;
+        return rgt;
+    }
+    loc left()
+    {
+        auto p = root;
+        while (p)
+        {
+
+            p = p->Children[0];
+        }
+        return loc(p, 0);
+    }
+    loc right()
+    {
+        auto p = root;
+        while (p)
+        {
+            p = p->last_child();
+        }
+        return loc(p, p->use - 1);
+    }
+    void insert(const key_type key, const data_type val)
     {
         node_type *p = root;
-        while (1) {
+        while (1)
+        {
             int i = find_pos(p, key);
 
             if (p->isLeaf)
@@ -195,7 +288,8 @@ public:
 
         insert_aux0(p, key, val);
 
-        if (p->use == deg + 1) {
+        if (p->use == deg + 1)
+        {
             insert_fix(p);
         }
     }
@@ -204,16 +298,17 @@ public:
     {
         node_type *p = root;
 
-        while (p) {
+        while (p)
+        {
             int i = find_pos(p, k);
 
             if (p->Keys[i] == k)
-                return loc{p, i};
+                return loc(p, i);
             if (p->isLeaf)
-                return loc{nullptr, 0};
+                return loc(nullptr, 0);
             p = p->Children[i];
         }
-        return loc{nullptr, 0};
+        return loc(nullptr, 0);
     }
 
     //i must in btree.
@@ -235,7 +330,8 @@ public:
         char_ptr p;
         p.ptr = n;
         int ret = 0;
-        for (int i = 0; i < sizeof(void *); i++) {
+        for (int i = 0; i < sizeof(void *); i++)
+        {
             i += p.b[i];
         }
         return ret;
@@ -248,9 +344,11 @@ public:
         if (bt.root == nullptr)
             return out;
         q.push(bt.root);
-        while (!q.empty()) {
+        while (!q.empty())
+        {
             queue<node_type *> q2;
-            while (!q.empty()) {
+            while (!q.empty())
+            {
 
                 p = q.front();
                 q.pop();
@@ -260,7 +358,8 @@ public:
                 else
                     cout << "[";
                 //out<<p->prev->get_id()<<"|"<<p->get_id()<<"|"<<p->next->get_id();
-                for (int i = 0; i < p->use; i++) {
+                for (int i = 0; i < p->use; i++)
+                {
                     out << p->Keys[i] << " ";
                     if (!p->isLeaf)
                         q2.push(p->get_child(i));
@@ -279,7 +378,7 @@ public:
         return out;
     }
 
-private:
+  private:
     inline void destroy_node(node_type *n) { delete n; }
     inline node_type *create_node()
     {
@@ -302,7 +401,8 @@ private:
         assert(node->use == deg + 1);
         int mid = deg / 2;
         node_type *par = node->Parent;
-        if (par == nullptr) {
+        if (par == nullptr)
+        {
             par = create_node();
             par->isLeaf = false;
             par->use = 0;
@@ -316,11 +416,14 @@ private:
         node->Parent = par;
         rightNode->use = deg - deg / 2;
         //std::copy
-        for (int j = 0; j < rightNode->use; j++) {
+        for (int j = 0; j < rightNode->use; j++)
+        {
             rightNode->Keys[j] = node->Keys[j + mid + 1];
         }
-        if (!rightNode->isLeaf) {
-            for (int j = 0; j < rightNode->use + 1; j++) {
+        if (!rightNode->isLeaf)
+        {
+            for (int j = 0; j < rightNode->use + 1; j++)
+            {
                 rightNode->Children[j] = node->Children[j + mid + 1];
                 rightNode->Children[j]->Parent = rightNode;
             }
@@ -330,14 +433,18 @@ private:
         par->insert(i, make_pair(node->Keys[mid], node));
         par->set_child(i + 1, rightNode);
         rightNode->prev = node;
-        if (node->next) {
+        if (node->next)
+        {
             node->next->prev = rightNode;
             rightNode->next = node->next;
-        } else {
+        }
+        else
+        {
             rightNode->next = nullptr;
         }
 
-        if (!node->isLeaf) {
+        if (!node->isLeaf)
+        {
             node->last_child()->next = nullptr;
             rightNode->first_child()->prev = nullptr;
         }
@@ -360,7 +467,7 @@ private:
         assert(node->isLeaf);
         int i = find_pos(node, k);
         node->insert_key(i, k);
-        
+
         return i;
     }
 
@@ -379,9 +486,12 @@ private:
         if (node->use >= min_slot)
             return;
         node_type *par = node->Parent;
-        if (par == nullptr) { //root
-            if (node->use == 0) {
-                if (!node->isLeaf) {
+        if (par == nullptr)
+        { //root
+            if (node->use == 0)
+            {
+                if (!node->isLeaf)
+                {
                     root = node->Children[0];
                     root->Parent = nullptr;
                 }
@@ -389,10 +499,12 @@ private:
             return;
         }
         int x = 0;
-        while (x < par->use + 1 && par->Children[x] != node) {
+        while (x < par->use + 1 && par->Children[x] != node)
+        {
             x++;
         }
-        if (node->prev && node->prev->use > min_slot) {
+        if (node->prev && node->prev->use > min_slot)
+        {
             // reblance. borrow one from prev
             // index: x-1 x
             //      [p  a   ...]         [p   f   ...]
@@ -407,7 +519,8 @@ private:
             node->insert(
                 0, std::make_pair(par->get_key(x - 1), prev->last_child()));
 
-            if (!node->isLeaf && node->use > 0) {
+            if (!node->isLeaf && node->use > 0)
+            {
                 node->Children[0]->next = node->Children[1];
                 node->Children[0]->prev = nullptr;
                 node->Children[1]->prev = node->Children[0];
@@ -428,7 +541,8 @@ private:
         //   [.][n][rig]        [.] [na][ig]
         //         /
         //       [c]
-        if (node->next && node->next->use > min_slot) {
+        if (node->next && node->next->use > min_slot)
+        {
 
             node_type *next = node->next;
             assert(par->Children[x] == node);
@@ -436,7 +550,8 @@ private:
             node->insert_key(node->use, par->get_key(x));
             node_type *child_r = next->first_child();
 
-            if (!node->isLeaf) {
+            if (!node->isLeaf)
+            {
                 node->Children[node->use] = child_r;
                 node->Children[node->use]->Parent = node;
                 node->Children[node->use - 1]->next = node->Children[node->use];
@@ -450,7 +565,8 @@ private:
             return;
         }
         // no brother is surplus ,so merge
-        if (node->prev) {
+        if (node->prev)
+        {
             assert(node->prev->use == min_slot);
 
             merge_child(node->prev, node);
@@ -462,7 +578,8 @@ private:
             return;
         }
 
-        if (node->next) {
+        if (node->next)
+        {
             assert(node->next->use == min_slot);
             merge_child(node, node->next);
             // if (par == root) {
@@ -487,7 +604,8 @@ private:
 
         node_type *par = next->Parent;
         int x = 0;
-        while (x < par->use + 1 && par->Children[x] != next) {
+        while (x < par->use + 1 && par->Children[x] != next)
+        {
             x++;
         }
 
@@ -496,12 +614,15 @@ private:
         prev->use += next->use + 1;
         prev->Keys[old_use] = par->Keys[x - 1];
 
-        for (int j = 0; j < next->use; j++) {
+        for (int j = 0; j < next->use; j++)
+        {
             prev->Keys[j + min_slot] = next->Keys[j];
         }
 
-        if (!prev->isLeaf) {
-            for (int j = 0; j < next->use + 1; j++) {
+        if (!prev->isLeaf)
+        {
+            for (int j = 0; j < next->use + 1; j++)
+            {
                 prev->Children[j + min_slot] = next->Children[j];
                 prev->Children[j + min_slot]->Parent = prev;
             }
@@ -510,15 +631,19 @@ private:
             prev->Children[min_slot]->prev = prev->Children[min_slot - 1];
         }
 
-        for (int j = x - 1; j < par->use; j++) {
+        for (int j = x - 1; j < par->use; j++)
+        {
             par->Keys[j] = par->Keys[j + 1];
             par->Children[j + 1] = par->Children[j + 2];
         }
         par->use--;
-        if (next->next) {
+        if (next->next)
+        {
             next->next->prev = prev;
             prev->next = next->next;
-        } else {
+        }
+        else
+        {
             prev->next = nullptr;
         }
 
@@ -534,7 +659,8 @@ private:
 
         //the simplest remove
         i.node->remove(i.pos);
-        if (!i.node->is_ok()) {
+        if (!i.node->is_ok())
+        {
             remove_fix(i.node);
         }
     }
@@ -544,7 +670,8 @@ private:
         assert(!i.node->isLeaf);
         node_type *node = i.node;
         int p = i.pos;
-        if (node_type *child = node->get_child(p)) {
+        if (node_type *child = node->get_child(p))
+        {
             // remove o
             //      [n  o   d]          [n  i   d]
             //      / \/ \      -->     / \/ \      --> remove i in [chi]
@@ -552,7 +679,7 @@ private:
             //
             node->set_key(p, child->last_key());
 
-            remove(loc{child, child->use - 1});
+            remove(loc(child, child->use - 1));
         }
     }
     node_type *root;

@@ -1,21 +1,21 @@
 
 #include <string>
 #include<vector>
-
+using namespace std;
 namespace omd
 {
  
 
 struct cmd_ret{
 
-}
+};
 
 struct attr_info{
 
-}
+};
 
 struct db_cmd{
-    cmd_ret open_db(const string  db_name)=0;
+    cmd_ret open_db(const string  db_name);
     cmd_ret close_db();
     
     cmd_ret create_table(const string rel_name,const vector<attr_info> attrs);
@@ -32,7 +32,7 @@ struct db_cmd{
     cmd_ret print(const string rel_name);
     cmd_ret set(const string param_name,const string value);
 
-}
+};
 
 } // omd
 

@@ -2,8 +2,4 @@
 
 namespace omd{
 
-LRU::LRU(int size){
-    _q.resize(size);
-}
-
 }

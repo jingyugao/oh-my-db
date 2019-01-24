@@ -6,6 +6,6 @@ using namespace omd;
 using namespace std;
 int main(int, char **)
 {
-    db d1;
-    d1.insert(1,"xxx");
+    table t1("xx");
+    t1.insert(1,"xxx");
 }

@@ -1,71 +1,110 @@
 #ifndef DB_H
 #define DB_H
 
-#include "b_plus_tree.h"
+#include "b_tree.h"
 #include "cfg_def.h"
 #include <stack>
 #include <string>
 #include <vector>
+#include "iteator.h"
 using namespace std;
 
-enum dbType { Int = 0, String = 1 };
-namespace omd {
-struct column {
-    int primary_key;
+namespace omd
+{
+
+typedef string key_type;
+
+enum dbValType
+{
+  Int = 1,
+  String = 2
+};
+
+struct Value
+{
+  int kind;
+  int len;
+  char *data;
+};
+class table;
+
+struct dbObject
+{
+  map<string, Value> data;
+  void *raw;
+};
+struct ColAttr
+{
+  string name;
+  int kind;
+  int offset;
+  int len;
+};
+struct sheame
+{
+  vector<ColAttr> attrs;
+};
+// class table
+// {
+//   public:
+//     table(string name) {}
+//     void fileScan() {}
+
+//   private:
+//     string _name;
+//     string pryKey;
+//     BTree<string, dbObject *> _data;
+
+//     db *_db;
+// };
+
+
+class index
+{
+public:
+
+  Iteator *getIter()
+  {
+    Iteator *i=new idxIter(this);
+
+    return i;
+  }
+
+private:
+  friend class idxIter;
+  table *_table;
+  BTree<key_type, dbObject> _bpt;
+};
+
+class table
+{
+public:
+  table(const string &name);
+
+  typedef pair<key_t, string> value_type;
+  
+  void insert(const key_t primary_key, const void *data)
+  {
+    dbObject d;
+    insert(d);
+  }
+  void insert(dbObject obj);
+
+  dbObject *find(const key_type primary_key);
+
+  void delele(const key_type primary_key);
+
+private:
+  void store();
+  string _pryKey;
+  BTree<key_type, dbObject> _bpt;
+  stack<int> _freeNode;
+  string _name;
+  string _path;
 };
 
 
 
-class table {
-public:
-    table(string name) {}
-
-private:
-    column *insert(column*){ }
-    column *get_raw(int n) { return (column *) (_data + n * _col_size); }
-    string _name;
-
-    char *_data;
-    int _col_size;
-    db *_db;
-}
-
-class index {
-public:
-private:
-    table *_table;
-    bplustree<key_type, dbObject *> _bpt;
-
-}
-
-class db {
-public:
-    db(const string &name);
-
-    typedef int key_type;
-    typedef pair<key_t, string> value_type;
-
-    void insert(const key_t primary_key, const string data)
-    {
-        dbObject d;
-        d._key = primary_key;
-        d._data = data;
-        insert(d);
-    }
-    void insert(const dbObject &obj);
-
-    dbObject *find(const key_type primary_key);
-
-    void delele(const key_type primary_key);
-
-private:
-    void store();
-    bplustree<key_type, dbObject *> _bpt;
-    vector<dbObject> _data;
-    stack<int> _freeNode;
-    string _name;
-    string _path;
-};
 
 } // namespace omd
 
