@@ -1,3 +1,5 @@
+#ifndef B_TREE_H
+#define B_TREE_H
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -183,15 +185,18 @@ class BTree
     //simple iteator
     struct loc
     {
+        loc() {}
         loc(node_type *n, int p)
         {
             node = n;
             pos = p;
         }
-        key_type getKey(){
+        key_type getKey()
+        {
             return node->Keys[pos];
         }
-        data_type getVal(){
+        data_type getVal()
+        {
             return node->Datas[pos];
         }
         node_type *node;
@@ -686,3 +691,5 @@ class BTree
 };
 
 } // namespace omd
+
+#endif

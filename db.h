@@ -7,32 +7,16 @@
 #include <string>
 #include <vector>
 #include "iteator.h"
+#include "db_object.h"
 using namespace std;
 
 namespace omd
 {
 
-typedef string key_type;
 
-enum dbValType
-{
-  Int = 1,
-  String = 2
-};
-
-struct Value
-{
-  int kind;
-  int len;
-  char *data;
-};
 class table;
 
-struct dbObject
-{
-  map<string, Value> data;
-  void *raw;
-};
+
 struct ColAttr
 {
   string name;
@@ -59,22 +43,7 @@ struct sheame
 // };
 
 
-class index
-{
-public:
 
-  Iteator *getIter()
-  {
-    Iteator *i=new idxIter(this);
-
-    return i;
-  }
-
-private:
-  friend class idxIter;
-  table *_table;
-  BTree<key_type, dbObject> _bpt;
-};
 
 class table
 {
