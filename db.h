@@ -66,7 +66,7 @@ public:
 private:
   void store();
   string _pryKey;
-  BTree<key_type, dbObject> _bpt;
+  BTree<key_type,void*> _bpt;
   stack<int> _freeNode;
   string _name;
   string _path;

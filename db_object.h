@@ -20,9 +20,10 @@ struct Value
     char *data;
 };
 struct dbObject
-{
+{   
     map<string, Value> data;
     void *raw;
+    bool NotFound;
 };
 
 } // namespace omd

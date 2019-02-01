@@ -21,10 +21,11 @@ void table::insert(dbObject obj)
         k = "autoIncrement";
     }
     k = string(val->second.data);
-    _bpt.insert(k, obj);
+    _bpt.insert(k, obj.raw);
 }
 dbObject *table::find(const key_type primary_key)
 {
+    return nullptr;
 }
 
 void table::delele(const key_type primary_key)

@@ -6,7 +6,7 @@
 namespace omd
 {
 class index;
-class Iteator
+struct Iteator
 {
   virtual bool open() = 0;
   virtual dbObject getNext();
@@ -18,12 +18,11 @@ class idxIter : public Iteator
 public:
   idxIter(index *i = nullptr);
   bool open();
-  bool hasNext();
-  dbObject getOne();
+  dbObject getNext();
   bool close();
 
 private:
-  BTree<key_type, dbObject>::loc cur;
+  BTree<key_type, void*>::loc cur;
   index *idx;
 };
 } // namespace omd

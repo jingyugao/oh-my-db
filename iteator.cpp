@@ -13,13 +13,15 @@ bool idxIter::open()
     cur = idx->_bpt.begin();
     return true;
 }
-bool idxIter::hasNext()
+
+dbObject idxIter::getNext()
 {
-    return !(cur == idx->_bpt.right());
-}
-dbObject idxIter::getOne()
-{
-    dbObject v = cur.getVal();
+    dbObject v;
+    if(cur==idx->_bpt.end()){
+       v.NotFound=true;
+       return v;
+    }
+    v.raw = cur.getVal();
     cur = cur.next();
     return v;
 }

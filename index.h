@@ -16,7 +16,7 @@ public:
 private:
   friend class idxIter;
   table *_table;
-  BTree<key_type, dbObject> _bpt;
+  BTree<key_type, void*> _bpt;
 };
 
 } // namespace omd
